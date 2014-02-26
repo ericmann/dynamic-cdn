@@ -7,8 +7,6 @@
  * Author:      10up
  * Author URI:  http://10up.com
  * License:     GPLv2+
- * Text Domain: dyncdn
- * Domain Path: /languages
  */
 
 /**
@@ -40,39 +38,10 @@ define( 'DYNCDN_VERSION', '0.1.0' );
 define( 'DYNCDN_URL',     plugin_dir_url( __FILE__ ) );
 define( 'DYNCDN_PATH',    dirname( __FILE__ ) . '/' );
 
-/**
- * Default initialization for the plugin:
- * - Registers the default textdomain.
- */
-function dyncdn_init() {
-	$locale = apply_filters( 'plugin_locale', get_locale(), 'dyncdn' );
-	load_textdomain( 'dyncdn', WP_LANG_DIR . '/dyncdn/dyncdn-' . $locale . '.mo' );
-	load_plugin_textdomain( 'dyncdn', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
-}
+// Requires
+require_once DYNCDN_PATH . 'class.dynamic_cdn.php';
 
-/**
- * Activate the plugin
- */
-function dyncdn_activate() {
-	// First load the init scripts in case any rewrite functionality is being loaded
-	dyncdn_init();
+Dynamic_CDN::factory();
 
-	flush_rewrite_rules();
-}
-register_activation_hook( __FILE__, 'dyncdn_activate' );
-
-/**
- * Deactivate the plugin
- * Uninstall routines should be in uninstall.php
- */
-function dyncdn_deactivate() {
-
-}
-register_deactivation_hook( __FILE__, 'dyncdn_deactivate' );
-
-// Wireup actions
-add_action( 'init', 'dyncdn_init' );
-
-// Wireup filters
-
-// Wireup shortcodes
+// Allow other plugins (i.e. mu-plugins) to hook in and populate the CDN domain array.
+do_action( 'dynamic_cdn_first_loaded' );
