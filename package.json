@@ -10,6 +10,9 @@
     "email": "sales@10up.com",
     "url": "http://10up.com"
   },
-  "devDependencies": {},
+  "devDependencies": {
+	  "grunt": "~0.4.2",
+	  "grunt-wp-readme-to-markdown": "~0.6.0"
+  },
   "keywords": []
 }
