@@ -14,6 +14,8 @@ Dynamic CDN for front-end assets.
 
 Dynamic solution for rewriting image asset URLs to a hosted content delivery network (CDN) with optional domain sharding for concurrent downloads.
 
+This plugin is based heavily on the CDN dropin from Mark Jaquith's WP_Stack (https://github.com/markjaquith/WP-Stack).
+
 == Installation ==
 
 = Manual Installation =
@@ -31,14 +33,12 @@ Yes.  The plugin, as designed, will work just fine in the mu-plugins directory. 
 
 In a function wired to `dynamic_cdn_first_loaded`, you'll reference the `->add_domain()` method of the `Dynamic_CDN` object.  For example:
 
-```
-function my_cdn_domains() {
-    Dynamic_CDN::factory()->add_domain( 'cdn0.mydomain.com' );
-    Dynamic_CDN::factory()->add_domain( 'cdn1.mydomain.com' );
-    Dynamic_CDN::factory()->add_domain( 'cdn2.mydomain.com' );
-}
-add_action( 'dynamic_cdn_first_loaded', 'my_cdn_domains' );
-```
+    function my_cdn_domains() {
+        Dynamic_CDN::factory()->add_domain( 'cdn0.mydomain.com' );
+        Dynamic_CDN::factory()->add_domain( 'cdn1.mydomain.com' );
+        Dynamic_CDN::factory()->add_domain( 'cdn2.mydomain.com' );
+    }
+    add_action( 'dynamic_cdn_first_loaded', 'my_cdn_domains' );
 
 = What if I don't add any domains, will this break my images? =
 

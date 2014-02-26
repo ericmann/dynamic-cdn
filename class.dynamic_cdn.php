@@ -2,6 +2,10 @@
 
 /**
  * Dynamic CDN object
+ *
+ * Enables filtering of content to automatically replace asset urls (i.e. images) with CDN-served equivalents.
+ *
+ * @package Dynamic CDN
  */
 class Dynamic_CDN {
 
@@ -9,6 +13,11 @@ class Dynamic_CDN {
 	 * @var array Domain to use as a CDN.
 	 */
 	protected $cdn_domains;
+
+	/**
+	 * @var bool
+	 */
+	protected $has_domains = false;
 
 	/**
 	 * @var bool Flag to filter only uploaded content.
@@ -46,7 +55,7 @@ class Dynamic_CDN {
 			}
 
 			$this->site_domain = parse_url( get_bloginfo( 'url' ), PHP_URL_HOST );
-			$this->cdn_domains = apply_filters( 'dynamic_cdn_domains', array() );
+			$this->cdn_domains = apply_filters( 'dynamic_cdn_default_domains', array() );
 		}
 	}
 
@@ -57,9 +66,13 @@ class Dynamic_CDN {
 	 */
 	public function add_domain( $domain ) {
 		$this->cdn_domains[] = $domain;
+
+		$this->has_domains = true;
 	}
 
 	/**
+	 * Get a CDN path for a given file, using a reduced checksum to automatically select from an array of available domains.
+	 *
 	 * @param string $file_path
 	 *
 	 * @return string
@@ -73,11 +86,17 @@ class Dynamic_CDN {
 	}
 
 	/**
+	 * Filter uploaded content (with the given extensions) and rewrite to a CDN.
+	 *
 	 * @param $content
 	 *
 	 * @return mixed
 	 */
 	public function filter_uploads_only( $content ) {
+		if ( ! $this->has_domains ) {
+			return $content;
+		}
+
 		$upload_dir = wp_upload_dir();
 		$upload_dir = $upload_dir['baseurl'];
 		$domain = preg_quote( parse_url( $upload_dir, PHP_URL_HOST ), '#' );
@@ -89,11 +108,17 @@ class Dynamic_CDN {
 	}
 
 	/**
+	 * Filter all static content (with the given extensions) and rewrite to a CDN.
+	 *
 	 * @param $content
 	 *
 	 * @return mixed
 	 */
 	public function filter( $content ) {
+		if ( ! $this->has_domains ) {
+			return $content;
+		}
+
 		return preg_replace( "#=([\"'])(https?://{$this->site_domain})?/([^/](?:(?!\\1).)+)\.(" . implode( '|', $this->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", '=$1http://' . $this->cdn_domain . '/$3.$4$5$1', $content );
 	}
 
