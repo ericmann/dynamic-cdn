@@ -41,7 +41,12 @@ define( 'DYNCDN_PATH',    dirname( __FILE__ ) . '/' );
 // Requires
 require_once DYNCDN_PATH . 'class.dynamic_cdn.php';
 
-Dynamic_CDN::factory();
+function dynamic_cdn_init() {
+	Dynamic_CDN::factory();
 
-// Allow other plugins (i.e. mu-plugins) to hook in and populate the CDN domain array.
-do_action( 'dynamic_cdn_first_loaded' );
+	// Allow other plugins (i.e. mu-plugins) to hook in and populate the CDN domain array.
+	do_action( 'dynamic_cdn_first_loaded' );
+
+	Dynamic_CDN::factory()->init();
+}
+add_action( 'init', 'dynamic_cdn_init' );
