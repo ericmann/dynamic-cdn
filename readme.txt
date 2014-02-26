@@ -1,9 +1,9 @@
 === Dynamic CDN ===
-Contributors:      10up
+Contributors:      10up, ericmann
 Donate link:       http://10up.com
 Tags: 
-Requires at least: 3.5.1
-Tested up to:      3.5.1
+Requires at least: 3.8.1
+Tested up to:      3.8.1
 Stable tag:        0.1.0
 License:           GPLv2 or later
 License URI:       http://www.gnu.org/licenses/gpl-2.0.html
@@ -12,7 +12,7 @@ Dynamic CDN for front-end assets.
 
 == Description ==
 
-
+Dynamic solution for rewriting image asset URLs to a hosted content delivery network (CDN) with optional domain sharding for concurrent downloads.
 
 == Installation ==
 
@@ -23,9 +23,30 @@ Dynamic CDN for front-end assets.
 
 == Frequently Asked Questions ==
 
+= Will this work as a mu-plugin? =
+
+Yes.  The plugin, as designed, will work just fine in the mu-plugins directory.  We highly recommend a second mu-plugin be added to configure the CDN domains used by the system.
+
+= How do I add a domain? =
+
+In a function wired to `dynamic_cdn_first_loaded`, you'll reference the `->add_domain()` method of the `Dynamic_CDN` object.  For example:
+
+```
+function my_cdn_domains() {
+    Dynamic_CDN::factory()->add_domain( 'cdn0.mydomain.com' );
+    Dynamic_CDN::factory()->add_domain( 'cdn1.mydomain.com' );
+    Dynamic_CDN::factory()->add_domain( 'cdn2.mydomain.com' );
+}
+add_action( 'dynamic_cdn_first_loaded', 'my_cdn_domains' );
+```
+
+= What if I don't add any domains, will this break my images? =
+
+Hopefully not.  If you haven't added any domains the plugin will not rewrite anything, bypassing your images entirely.
 
 == Screenshots ==
 
+None at this time.
 
 == Changelog ==
 
