@@ -4,7 +4,7 @@ Donate link:       http://10up.com
 Tags:              CDN, images, performance
 Requires at least: 3.8.1
 Tested up to:      3.8.1
-Stable tag:        0.1.0
+Stable tag:        0.2.0
 License:           GPLv2 or later
 License URI:       http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -56,7 +56,7 @@ None at this time.
 
 == Changelog ==
 
-= dev =
+= 0.2.0 =
 * New: CDN domains can be added with a constant.
 * Fix: Make domain mapping multisite aware. props @trepmal
 
