@@ -54,9 +54,10 @@ class Dynamic_CDN {
 
 			$this->site_domain = parse_url( get_bloginfo( 'url' ), PHP_URL_HOST );
 
-			if ( isset( 'DYNCDN_DOMAINS' ) ) {
+			if ( defined( 'DYNCDN_DOMAINS' ) ) {
 				$this->cdn_domains = explode( ',', DYNCDN_DOMAINS );
 				$this->cdn_domains = array_map( 'trim', $this->cdn_domains );
+				$this->has_domains = true;
 			}
 
 			$this->cdn_domains = apply_filters( 'dynamic_cdn_default_domains', $this->cdn_domains );
@@ -124,8 +125,12 @@ class Dynamic_CDN {
 			return $content;
 		}
 
+		$url = explode( '://', get_bloginfo( 'url' ) );
+		array_shift( $url );
+		$url = preg_quote( implode( '://', $url ), '#' );
+
 		//return preg_replace( "#=([\"'])(https?://{$this->site_domain})?/([^/](?:(?!\\1).)+)\.(" . implode( '|', $this->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", '=$1http://' . $this->cdn_domain . '/$3.$4$5$1', $content );
-		return preg_replace_callback( "#=([\"'])(https?://{$this->site_domain})?/([^/](?:(?!\\1).)+)\.(" . implode( '|', $this->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", array( $this, 'filter_cb' ), $content );
+		return preg_replace_callback( "#=([\"'])(https?://{$url})?/([^/](?:(?!\\1).)+)\.(" . implode( '|', $this->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", array( $this, 'filter_cb' ), $content );
 	}
 
 	/**
@@ -142,7 +147,11 @@ class Dynamic_CDN {
 
 		$domain = $this->cdn_domain( $matches[0] );
 
-		return "={$matches[1]}http://{$domain}{$path}/{$matches[3]}.{$matches[4]}{$matches[1]}";
+		$url = explode( '://', get_bloginfo( 'url' ) );
+		array_shift( $url );
+		$url = str_replace( $this->site_domain, $domain, implode( '://', $url ) );
+
+		return "={$matches[1]}http://{$url}/{$matches[3]}.{$matches[4]}{$matches[1]}";
 	}
 
 	/**

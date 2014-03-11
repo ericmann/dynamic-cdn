@@ -58,6 +58,7 @@ None at this time.
 
 = dev =
 * New: CDN domains can be added with a constant.
+* Fix: Make domain mapping multisite aware. props @trepmal
 
 = 0.1.0 =
 * First release
