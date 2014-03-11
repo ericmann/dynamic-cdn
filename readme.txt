@@ -40,6 +40,12 @@ In a function wired to `dynamic_cdn_first_loaded`, you'll reference the `->add_d
     }
     add_action( 'dynamic_cdn_first_loaded', 'my_cdn_domains' );
 
+= What if I want to add my domains through wp-config.php?
+
+Simply define a DYNCDN_DOMAINS constant that's a comma-delimited list of your cdn domains.  For example:
+
+    define( 'DYNCDN_DOMAINS', 'cdn0.mydomain.com,cdn1.mydomain.com,cdn2.mydomain.com' );
+
 = What if I don't add any domains, will this break my images? =
 
 Hopefully not.  If you haven't added any domains the plugin will not rewrite anything, bypassing your images entirely.
@@ -49,6 +55,9 @@ Hopefully not.  If you haven't added any domains the plugin will not rewrite any
 None at this time.
 
 == Changelog ==
+
+= dev =
+* New: CDN domains can be added with a constant.
 
 = 0.1.0 =
 * First release

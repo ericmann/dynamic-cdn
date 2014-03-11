@@ -53,6 +53,12 @@ class Dynamic_CDN {
 			}
 
 			$this->site_domain = parse_url( get_bloginfo( 'url' ), PHP_URL_HOST );
+
+			if ( isset( 'DYNCDN_DOMAINS' ) ) {
+				$this->cdn_domains = explode( ',', DYNCDN_DOMAINS );
+				$this->cdn_domains = array_map( 'trim', $this->cdn_domains );
+			}
+
 			$this->cdn_domains = apply_filters( 'dynamic_cdn_default_domains', $this->cdn_domains );
 		}
 	}
