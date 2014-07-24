@@ -151,7 +151,10 @@ class Dynamic_CDN {
 		array_shift( $url );
 		$url = str_replace( $this->site_domain, $domain, implode( '://', $url ) );
 
-		return "={$matches[1]}http://{$url}/{$matches[3]}.{$matches[4]}{$matches[1]}";
+		// Append query string, if its available
+		$query_string = isset( $matches[5] ) ? $matches[5] : '';
+
+		return "={$matches[1]}http://{$url}/{$matches[3]}.{$matches[4]}{$query_string}{$matches[1]}";
 	}
 
 	/**
