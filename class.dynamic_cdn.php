@@ -151,10 +151,13 @@ class Dynamic_CDN {
 		array_shift( $url );
 		$url = str_replace( $this->site_domain, $domain, implode( '://', $url ) );
 
+		// Make sure to use https if the request is over SSL
+		$scheme = is_ssl() ? 'https' : 'http';
+
 		// Append query string, if its available
 		$query_string = isset( $matches[5] ) ? $matches[5] : '';
 
-		return "={$matches[1]}http://{$url}/{$matches[3]}.{$matches[4]}{$query_string}{$matches[1]}";
+		return "={$matches[1]}{$scheme}://{$url}/{$matches[3]}.{$matches[4]}{$query_string}{$matches[1]}";
 	}
 
 	/**
