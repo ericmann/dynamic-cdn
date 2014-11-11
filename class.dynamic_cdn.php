@@ -149,7 +149,7 @@ class Dynamic_CDN {
 
 		$url = explode( '://', get_bloginfo( 'url' ) );
 		array_shift( $url );
-		$url = str_replace( $this->site_domain, $domain, implode( '://', $url ) );
+		$url = str_replace( $this->site_domain, $domain, rtrim( implode( '://', $url ), '/' ) );
 
 		// Make sure to use https if the request is over SSL
 		$scheme = is_ssl() ? 'https' : 'http';
