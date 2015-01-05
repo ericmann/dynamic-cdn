@@ -127,7 +127,7 @@ class Dynamic_CDN {
 
 		$url = explode( '://', get_bloginfo( 'url' ) );
 		array_shift( $url );
-		$url = preg_quote( implode( '://', $url ), '#' );
+		$url = preg_quote( rtrim( implode( '://', $url ), '/' ), '#' );
 
 		//return preg_replace( "#=([\"'])(https?://{$this->site_domain})?/([^/](?:(?!\\1).)+)\.(" . implode( '|', $this->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", '=$1http://' . $this->cdn_domain . '/$3.$4$5$1', $content );
 		return preg_replace_callback( "#=([\"'])(https?://{$url})?/([^/](?:(?!\\1).)+)\.(" . implode( '|', $this->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", array( $this, 'filter_cb' ), $content );
@@ -149,7 +149,7 @@ class Dynamic_CDN {
 
 		$url = explode( '://', get_bloginfo( 'url' ) );
 		array_shift( $url );
-		$url = str_replace( $this->site_domain, $domain, implode( '://', $url ) );
+		$url = str_replace( $this->site_domain, $domain, rtrim( implode( '://', $url ), '/' ) );
 
 		// Make sure to use https if the request is over SSL
 		$scheme = is_ssl() ? 'https' : 'http';
