@@ -3,7 +3,7 @@
  * Plugin Name: Dynamic CDN
  * Plugin URI:  http://10up.com
  * Description: Dynamic CDN for front-end assets.
- * Version:     0.2.0
+ * Version:     0.2.1
  * Author:      10up
  * Author URI:  http://10up.com
  * License:     GPLv2+
