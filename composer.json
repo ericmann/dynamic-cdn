@@ -4,6 +4,7 @@
 	"homepage":"https://github.com/ericmann/dynamic-cdn/",
 	"version":"0.2.1",
 	"license":"GPLv2",
+	"minimum-stability":"dev",
 	"author": [
 		{
 			"name":"10up",
