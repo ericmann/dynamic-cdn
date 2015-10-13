@@ -1,0 +1,17 @@
+{
+	"name":"Dynamic CDN",
+	"type":"wordpress-plugin",
+	"homepage":"https://github.com/ericmann/dynamic-cdn/",
+	"version":"0.2.1",
+	"license":"GPLv2",
+	"author": [
+		{
+			"name":"10up",
+			"homepage":"http://10up.com"
+		}
+	],
+	"require":{
+		"php":">5.3.2",
+		"composer/installers":"v1.0.21"
+	}
+}
