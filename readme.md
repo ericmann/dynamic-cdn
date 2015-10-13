@@ -4,7 +4,7 @@
 **Tags:**              CDN, images, performance  
 **Requires at least:** 3.8.1  
 **Tested up to:**      3.8.1  
-**Stable tag:**        0.2.0  
+**Stable tag:**        0.2.1  
 **License:**           GPLv2 or later  
 **License URI:**       http://www.gnu.org/licenses/gpl-2.0.html  
 
@@ -45,7 +45,8 @@ In a function wired to `dynamic_cdn_first_loaded`, you'll reference the `->add_d
 Simply define a DYNCDN_DOMAINS constant that's a comma-delimited list of your cdn domains.  For example:
 
     define( 'DYNCDN_DOMAINS', 'cdn0.mydomain.com,cdn1.mydomain.com,cdn2.mydomain.com' );
-###
+
+###
 = What if I don't add any domains, will this break my images? =
 
 Hopefully not.  If you haven't added any domains the plugin will not rewrite anything, bypassing your images entirely.
@@ -55,6 +56,9 @@ Hopefully not.  If you haven't added any domains the plugin will not rewrite any
 None at this time.
 
 == Changelog ==
+
+= 0.2.1 =
+* Composer.json
 
 = 0.2.0 =
 * New: CDN domains can be added with a constant.

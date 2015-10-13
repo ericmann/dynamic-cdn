@@ -4,7 +4,7 @@ Donate link:       http://10up.com
 Tags:              CDN, images, performance
 Requires at least: 3.8.1
 Tested up to:      3.8.1
-Stable tag:        0.2.0
+Stable tag:        0.2.1
 License:           GPLv2 or later
 License URI:       http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -55,6 +55,9 @@ Hopefully not.  If you haven't added any domains the plugin will not rewrite any
 None at this time.
 
 == Changelog ==
+
+= 0.2.1 =
+Composer.json
 
 = 0.2.0 =
 * New: CDN domains can be added with a constant.
