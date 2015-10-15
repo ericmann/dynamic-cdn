@@ -54,6 +54,13 @@ class Dynamic_CDN {
 
 			$this->site_domain = parse_url( get_bloginfo( 'url' ), PHP_URL_HOST );
 
+			/**
+			 * Update the stored site domain, should an aliasing plugin be used (for example)
+			 *
+			 * @param string $site_domain
+			 */
+			$this->site_domain = apply_filters( 'dynamic_cdn_site_domain', $this->site_domain );
+
 			if ( defined( 'DYNCDN_DOMAINS' ) ) {
 				$this->cdn_domains = explode( ',', DYNCDN_DOMAINS );
 				$this->cdn_domains = array_map( 'trim', $this->cdn_domains );
@@ -105,6 +112,7 @@ class Dynamic_CDN {
 		$upload_dir = wp_upload_dir();
 		$upload_dir = $upload_dir['baseurl'];
 		$domain = preg_quote( parse_url( $upload_dir, PHP_URL_HOST ), '#' );
+
 		$path = parse_url( $upload_dir, PHP_URL_PATH );
 		$preg_path = preg_quote( $path, '#' );
 
@@ -127,7 +135,14 @@ class Dynamic_CDN {
 
 		$url = explode( '://', get_bloginfo( 'url' ) );
 		array_shift( $url );
-		$url = preg_quote( rtrim( implode( '://', $url ), '/' ), '#' );
+
+		/**
+		 * Modify the domain we're rewriting, should an aliasing plugin be used (for example)
+		 *
+		 * @param string $site_domain
+		 */
+		$url = apply_filters( 'dynamic_cdn_site_domain', rtrim( implode( '://', $url ), '/' ) );
+		$url = preg_quote( $url, '#' );
 
 		//return preg_replace( "#=([\"'])(https?://{$this->site_domain})?/([^/](?:(?!\\1).)+)\.(" . implode( '|', $this->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", '=$1http://' . $this->cdn_domain . '/$3.$4$5$1', $content );
 		return preg_replace_callback( "#=([\"'])(https?://{$url})?/([^/](?:(?!\\1).)+)\.(" . implode( '|', $this->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", array( $this, 'filter_cb' ), $content );
@@ -149,7 +164,14 @@ class Dynamic_CDN {
 
 		$url = explode( '://', get_bloginfo( 'url' ) );
 		array_shift( $url );
-		$url = str_replace( $this->site_domain, $domain, rtrim( implode( '://', $url ), '/' ) );
+
+		/**
+		 * Modify the domain we're rewriting, should an aliasing plugin be used (for example)
+		 *
+		 * @param string $site_domain
+		 */
+		$url = apply_filters( 'dynamic_cdn_site_domain', rtrim( implode( '://', $url ), '/' ) );
+		$url = str_replace( $this->site_domain, $domain, $url );
 
 		// Make sure to use https if the request is over SSL
 		$scheme = is_ssl() ? 'https' : 'http';
