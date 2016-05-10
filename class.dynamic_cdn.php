@@ -41,7 +41,7 @@ class Dynamic_CDN {
 	 */
 	public function init() {
 		$this->uploads_only = apply_filters( 'dynamic_cdn_uploads_only', false );
-		$this->extensions = apply_filters( 'dynamic_cdn_extensions', array( 'jpe?g', 'gif', 'png', 'bmp', 'js', 'ico' ) );
+		$this->extensions = apply_filters( 'dynamic_cdn_extensions', array( 'jpe?g', 'gif', 'png', 'bmp', 'js', 'css', 'ico' ) );
 
 		if ( ! is_admin() ) {
 			add_action( 'template_redirect', array( $this, 'template_redirect' ) );
