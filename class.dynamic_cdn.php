@@ -52,7 +52,8 @@ class Dynamic_CDN {
 				add_filter( 'dynamic_cdn_content', array( $this, 'filter' ) );
 			}
 
-			$this->site_domain = parse_url( get_bloginfo( 'url' ), PHP_URL_HOST );
+			$url_parts = parse_url( get_bloginfo( 'url' ) );
+			$this->site_domain = $url_parts['host'] . ($url_parts['port'] ? ':' . $url_parts['port'] : '');
 
 			/**
 			 * Update the stored site domain, should an aliasing plugin be used (for example)
