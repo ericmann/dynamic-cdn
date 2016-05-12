@@ -40,16 +40,19 @@ class Dynamic_CDN {
 	 * Initialize the object and make sure the proper hooks are wired up.
 	 */
 	public function init() {
+		$filter_priority = apply_filters( 'dynamic_cdn_filter_priority', 10 );
+		$action_priority = apply_filters( 'dynamic_cdn_action_priority', 10 );
+		
 		$this->uploads_only = apply_filters( 'dynamic_cdn_uploads_only', false );
 		$this->extensions = apply_filters( 'dynamic_cdn_extensions', array( 'jpe?g', 'gif', 'png', 'bmp', 'js', 'css', 'ico' ) );
 
 		if ( ! is_admin() ) {
-			add_action( 'template_redirect', array( $this, 'template_redirect' ) );
+			add_action( 'template_redirect', array( $this, 'template_redirect' ), $action_priority );
 
 			if ( $this->uploads_only ) {
-				add_filter( 'the_content'/*'dynamic_cdn_content'*/, array( $this, 'filter_uploads_only' ) );
+				add_filter( 'the_content'/*'dynamic_cdn_content'*/, array( $this, 'filter_uploads_only' ), $filter_priority );
 			} else {
-				add_filter( 'dynamic_cdn_content', array( $this, 'filter' ) );
+				add_filter( 'dynamic_cdn_content', array( $this, 'filter' ), $filter_priority );
 			}
 
 			$url_parts = parse_url( get_bloginfo( 'url' ) );
@@ -112,14 +115,18 @@ class Dynamic_CDN {
 
 		$upload_dir = wp_upload_dir();
 		$upload_dir = $upload_dir['baseurl'];
-		$domain = preg_quote( parse_url( $upload_dir, PHP_URL_HOST ), '#' );
+		
+		$url_parts = parse_url( $upload_dir );
+		$domain = $url_parts['host'] . ($url_parts['port'] ? ':' . $url_parts['port'] : '');
+		$domain = preg_quote( $domain, '#' );
 
 		$path = parse_url( $upload_dir, PHP_URL_PATH );
 		$preg_path = preg_quote( $path, '#' );
 
 		// Targeted replace just on uploads URLs
-		//return preg_replace( "#=([\"'])(https?://{$domain})?$preg_path/((?:(?!\\1]).)+)\.(" . implode( '|', $this->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", '=$1http://' . $this->cdn_domain( $path ) . $path . '/$3.$4$5$1', $content );
-		return preg_replace_callback( "#=([\"'])(https?://{$domain})?$preg_path/((?:(?!\\1]).)+)\.(" . implode( '|', $this->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", array( $this, 'filter_cb' ), $content );
+		$pattern = "#=([\"'])(https?://{$domain})?$preg_path/((?:(?!\\1]).)+)\.(" . implode( '|', $this->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#";
+		
+		return preg_replace_callback( $pattern , array( $this, 'filter_cb' ), $content );
 	}
 
 	/**
@@ -145,8 +152,9 @@ class Dynamic_CDN {
 		$url = apply_filters( 'dynamic_cdn_site_domain', rtrim( implode( '://', $url ), '/' ) );
 		$url = preg_quote( $url, '#' );
 
-		//return preg_replace( "#=([\"'])(https?://{$this->site_domain})?/([^/](?:(?!\\1).)+)\.(" . implode( '|', $this->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", '=$1http://' . $this->cdn_domain . '/$3.$4$5$1', $content );
-		return preg_replace_callback( "#=([\"'])(https?://{$url})?/([^/](?:(?!\\1).)+)\.(" . implode( '|', $this->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", array( $this, 'filter_cb' ), $content );
+		$pattern = "#=(\\\?[\"'])(https?:\\\?/\\\?/{$url})?\\\?/([^/](?:(?!\\1).)+)\.(" . implode( '|', $this->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#";
+		
+		return preg_replace_callback( $pattern, array( $this, 'filter_cb' ), $content );
 	}
 
 	/**
