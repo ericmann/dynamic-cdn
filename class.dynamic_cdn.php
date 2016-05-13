@@ -183,7 +183,7 @@ class Dynamic_CDN {
 		$url = str_replace( $this->site_domain, $domain, $url );
 
 		// Make sure to use https if the request is over SSL
-		$scheme = is_ssl() ? 'https' : 'http';
+		$scheme = apply_filters( 'dynamic_cdn_protocol', ( is_ssl() ? 'https' : 'http' ) );
 
 		// Append query string, if its available
 		$query_string = isset( $matches[5] ) ? $matches[5] : '';
