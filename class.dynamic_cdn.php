@@ -50,8 +50,9 @@ class Dynamic_CDN {
 				add_filter( 'the_content'/*'dynamic_cdn_content'*/, array( $this, 'filter_uploads_only' ) );
 			} else {
 				add_filter( 'dynamic_cdn_content', array( $this, 'filter' ) );
-				add_filter( 'wp_calculate_image_srcset', array( $this, 'srcsets' ), 10, 5 );
 			}
+
+			add_filter( 'wp_calculate_image_srcset', array( $this, 'srcsets' ), 10, 5 );
 
 			$this->site_domain = parse_url( get_bloginfo( 'url' ), PHP_URL_HOST );
 
