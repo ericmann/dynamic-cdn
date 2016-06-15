@@ -50,6 +50,7 @@ class Dynamic_CDN {
 				add_filter( 'the_content'/*'dynamic_cdn_content'*/, array( $this, 'filter_uploads_only' ) );
 			} else {
 				add_filter( 'dynamic_cdn_content', array( $this, 'filter' ) );
+				add_filter( 'wp_calculate_image_srcset', array( $this, 'srcsets' ), 10, 5 );
 			}
 
 			$this->site_domain = parse_url( get_bloginfo( 'url' ), PHP_URL_HOST );
@@ -119,6 +120,30 @@ class Dynamic_CDN {
 		// Targeted replace just on uploads URLs
 		//return preg_replace( "#=([\"'])(https?://{$domain})?$preg_path/((?:(?!\\1]).)+)\.(" . implode( '|', $this->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", '=$1http://' . $this->cdn_domain( $path ) . $path . '/$3.$4$5$1', $content );
 		return preg_replace_callback( "#=([\"'])(https?://{$domain})?$preg_path/((?:(?!\\1]).)+)\.(" . implode( '|', $this->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", array( $this, 'filter_cb' ), $content );
+	}
+
+	/**
+	 * Handles the WP 4.4 srcset Dynamic CDN support
+	 *
+	 * @param $sources
+	 * @param $size_array
+	 * @param $image_src
+	 * @param $image_meta
+	 * @param $attachment_id
+	 *
+	 * @return mixed
+	 */
+	public function srcsets( $sources, $size_array, $image_src, $image_meta, $attachment_id ) {
+
+		if( ! defined( 'DYNCDN_DOMAINS' ) ) {
+			return $sources;
+		}
+		
+		foreach( $sources as $key => $source ) {
+			$sources[$key]['url'] = str_replace( site_url(), esc_url( array_shift( $this->cdn_domains ) ), $source['url'] );
+		}
+
+		return $sources;
 	}
 
 	/**
