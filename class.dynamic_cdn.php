@@ -43,7 +43,18 @@ class Dynamic_CDN {
 	 * Initialize the object and make sure the proper hooks are wired up.
 	 */
 	public function init() {
+		/**
+		 * Flag whether to filter all media content or just uploads. Set to `true` to only process uploads from the CDN
+		 *
+		 * @param bool $uploads_only
+		 */
 		$this->uploads_only = apply_filters( 'dynamic_cdn_uploads_only', false );
+
+		/**
+		 * Filter the file extensions that will be served from the CDN. Expects an array of RegEx-style strings.
+		 *
+		 * @param array $extensions
+		 */
 		$this->extensions = apply_filters( 'dynamic_cdn_extensions', array( 'jpe?g', 'gif', 'png', 'bmp', 'js', 'ico' ) );
 
 		if ( ! is_admin() ) {
@@ -72,6 +83,11 @@ class Dynamic_CDN {
 				$this->has_domains = true;
 			}
 
+			/**
+			 * Programmatically control and/or override any CDN domains as passed in via a hard-coded constant.
+			 *
+			 * @param array $cdn_domains
+			 */
 			$this->cdn_domains = apply_filters( 'dynamic_cdn_default_domains', $this->cdn_domains );
 		}
 	}
@@ -98,7 +114,12 @@ class Dynamic_CDN {
 		// First, get a checksum for the file path to give us the index we'll use from the CDN domain array.
 		$index = abs( crc32( $file_path ) ) % count( $this->cdn_domains );
 
-		// Return the correct CDN path to the file
+		/**
+		 * Return the correct CDN path to the file.
+		 *
+		 * @param string $cdn_domain
+		 * @param string $file_path
+		 */
 		return apply_filters( 'dynamic_cdn_domain_for_file', $this->cdn_domains[ $index ], $file_path );
 	}
 
@@ -122,7 +143,6 @@ class Dynamic_CDN {
 		$preg_path = preg_quote( $path, '#' );
 
 		// Targeted replace just on uploads URLs
-		//return preg_replace( "#=([\"'])(https?://{$domain})?$preg_path/((?:(?!\\1]).)+)\.(" . implode( '|', $this->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", '=$1http://' . $this->cdn_domain( $path ) . $path . '/$3.$4$5$1', $content );
 		return preg_replace_callback( "#=([\"'])(https?://{$domain})?$preg_path/((?:(?!\\1]).)+)\.(" . implode( '|', $this->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", array( $this, 'filter_cb' ), $content );
 	}
 
@@ -173,7 +193,6 @@ class Dynamic_CDN {
 		$url = apply_filters( 'dynamic_cdn_site_domain', rtrim( implode( '://', $url ), '/' ) );
 		$url = preg_quote( $url, '#' );
 
-		//return preg_replace( "#=([\"'])(https?://{$this->site_domain})?/([^/](?:(?!\\1).)+)\.(" . implode( '|', $this->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", '=$1http://' . $this->cdn_domain . '/$3.$4$5$1', $content );
 		return preg_replace_callback( "#=([\"'])(https?://{$url})?/([^/](?:(?!\\1).)+)\.(" . implode( '|', $this->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", array( $this, 'filter_cb' ), $content );
 	}
 
@@ -226,6 +245,12 @@ class Dynamic_CDN {
 	 * @return mixed|void
 	 */
 	public function ob( $contents ) {
+		/**
+		 * Filter the content from the output buffer
+		 *
+		 * @param string      $contents
+		 * @param Dynamic_CDN $this
+		 */
 		return apply_filters( 'dynamic_cdn_content', $contents, $this );
 	}
 
