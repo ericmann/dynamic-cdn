@@ -34,6 +34,9 @@ class Dynamic_CDN {
 	 */
 	protected $site_domain;
 
+	/**
+	 * Dynamic_CDN constructor.
+	 */
 	public function __construct() {}
 
 	/**
