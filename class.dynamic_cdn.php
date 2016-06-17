@@ -162,12 +162,36 @@ class Dynamic_CDN {
 		if( ! defined( 'DYNCDN_DOMAINS' ) ) {
 			return $sources;
 		}
-		
-		foreach( $sources as $key => $source ) {
-			$sources[$key]['url'] = str_replace( site_url(), esc_url( array_shift( $this->cdn_domains ) ), $source['url'] );
-		}
+
+		// Iteratively update each srcset
+		array_walk( $sources, array( $this, 'replace_srcset' ) );
 
 		return $sources;
+	}
+
+	/**
+	 * Replace the URL for a specific source in a srcset with a CDN'd version
+	 *
+	 * @param array $source
+	 *
+	 * @return array
+	 */
+	protected function replace_srcset( &$source ) {
+		$cdn_domain = $this->cdn_domain( basename( $source['url'] ) );
+
+		$url = explode( '://', get_bloginfo( 'url' ) );
+		array_shift( $url );
+
+		/**
+		 * Modify the domain we're rewriting, should an aliasing plugin be used (for example)
+		 *
+		 * @param string $site_domain
+		 */
+		$url = apply_filters( 'dynamic_cdn_site_domain', rtrim( implode( '://', $url ), '/' ) );
+
+		$source['url'] = str_replace( $url, $cdn_domain, $source['url'] );
+
+		return $source;
 	}
 
 	/**
