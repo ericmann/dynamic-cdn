@@ -1,10 +1,10 @@
 === Dynamic CDN ===
-Contributors:      10up, ericmann
-Donate link:       http://10up.com
+Contributors:      ericmann, 10up
+Donate link:       https://jumping-duck.com
 Tags:              CDN, images, performance
 Requires at least: 3.8.1
-Tested up to:      3.8.1
-Stable tag:        0.2.1
+Tested up to:      4.5.2
+Stable tag:        0.3.0
 License:           GPLv2 or later
 License URI:       http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -40,7 +40,7 @@ In a function wired to `dynamic_cdn_first_loaded`, you'll reference the `->add_d
     }
     add_action( 'dynamic_cdn_first_loaded', 'my_cdn_domains' );
 
-= What if I want to add my domains through wp-config.php?
+= What if I want to add my domains through wp-config.php? =
 
 Simply define a DYNCDN_DOMAINS constant that's a comma-delimited list of your cdn domains.  For example:
 
@@ -56,8 +56,8 @@ None at this time.
 
 == Changelog ==
 
-= 0.2.1 =
-Composer.json
+= 0.3.0 =
+* New: Add support for WordPress 4.4 srcsets
 
 = 0.2.0 =
 * New: CDN domains can be added with a constant.
