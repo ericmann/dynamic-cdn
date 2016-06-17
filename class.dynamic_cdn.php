@@ -161,7 +161,7 @@ class Dynamic_CDN {
 
 		if( is_admin() ) {
 			return $sources;
-        }
+		}
 
 		if( ! defined( 'DYNCDN_DOMAINS' ) ) {
 			return $sources;
