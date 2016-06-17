@@ -182,7 +182,12 @@ class Dynamic_CDN {
 		$cdn_domain = $this->cdn_domain( basename( $source['url'] ) );
 		$url = explode( '://', get_bloginfo( 'url' ) );
 		array_shift( $url );
+
+		/**
+		 * Allows plugins to override the HTTPS protocol
+		 */
 		$scheme = apply_filters( 'dynamic_cdn_protocol', ( is_ssl() ? 'https' : 'http' ) );
+
 		/**
 		 * Modify the domain we're rewriting, should an aliasing plugin be used (for example)
 		 *
