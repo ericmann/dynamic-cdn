@@ -22,7 +22,8 @@ function setup() {
 		return __NAMESPACE__ . "\\$function";
 	};
 	
-	add_action( 'init', $n( 'init' ) );
+	add_action( 'init',             $n( 'init' ) );
+	add_action( 'dynamic_cdn_init', $n( 'initialize_manager' ) );
 
 	/**
 	 * Allow other plugins (i.e. mu-plugins) to hook in and populate the CDN domain array.
@@ -40,6 +41,65 @@ function setup() {
  */
 function init() {
 	do_action( 'dynamic_cdn_init' );
+}
+
+/**
+ * Initialize the CDN domain manager for the current domain.
+ */
+function initialize_manager() {
+	$site_domain = parse_url( get_bloginfo( 'url' ), PHP_URL_HOST );
+
+	/**
+	 * Update the stored site domain, should an aliasing plugin be used (for example)
+	 *
+	 * @param string $site_domain
+	 */
+	$site_domain = apply_filters( 'dynamic_cdn_site_domain', $site_domain );
+
+	// Instantiate the domain manager
+	$manager = DomainManager( $site_domain );
+
+	/**
+	 * Flag whether to filter all media content or just uploads. Set to `true` to only process uploads from the CDN
+	 *
+	 * @param bool $uploads_only
+	 */
+	$manager->uploads_only = apply_filters( 'dynamic_cdn_uploads_only', false );
+
+	/**
+	 * Filter the file extensions that will be served from the CDN. Expects an array of RegEx-style strings.
+	 *
+	 * @param array $extensions
+	 */
+	$manager->extensions = apply_filters( 'dynamic_cdn_extensions', array( 'jpe?g', 'gif', 'png', 'bmp', 'js', 'ico' ) );
+
+	if ( ! is_admin() ) {
+		add_action( 'template_redirect', '\EAMann\Dynamic_CDN\Core\template_redirect' );
+
+		if ( $manager->uploads_only ) {
+			add_filter( 'the_content'/*'dynamic_cdn_content'*/, '\EAMann\Dynamic_CDN\Core\filter_uploads_only' );
+		} else {
+			add_filter( 'dynamic_cdn_content', '\EAMann\Dynamic_CDN\Core\filter' );
+		}
+
+		add_filter( 'wp_calculate_image_srcset', '\EAMann\Dynamic_CDN\Core\srcsets', 10, 5 );
+
+		$cdn_domains = array();
+		if ( defined( 'DYNCDN_DOMAINS' ) ) {
+			$cdn_domains = explode( ',', DYNCDN_DOMAINS );
+			$cdn_domains = array_map( 'trim', $cdn_domains );
+		}
+
+		/**
+		 * Programmatically control and/or override any CDN domains as passed in via a hard-coded constant.
+		 *
+		 * @param array $cdn_domains
+		 */
+		$cdn_domains = apply_filters( 'dynamic_cdn_default_domains', $cdn_domains );
+
+		// Add all domains to the manager
+		array_map( function( $domain ) use ( $manager ) { $manager->add( $domain ); }, $cdn_domains );
+	}
 }
 
 /**
@@ -118,152 +178,90 @@ function ob( $contents ) {
 }
 
 /**
- * Dynamic CDN object
+ * Filter uploaded content (with the given extensions) and rewrite to a CDN.
  *
- * Enables filtering of content to automatically replace asset urls (i.e. images) with CDN-served equivalents.
+ * @param $content
  *
- * @package Dynamic CDN
+ * @return mixed
  */
-class Old_Dynamic_CDN {
-	
+function filter_uploads_only( $content ) {
+	$manager = DomainManager::current();
 
-	/**
-	 * Initialize the object and make sure the proper hooks are wired up.
-	 */
-	public function init() {
-		/**
-		 * Flag whether to filter all media content or just uploads. Set to `true` to only process uploads from the CDN
-		 *
-		 * @param bool $uploads_only
-		 */
-		$this->uploads_only = apply_filters( 'dynamic_cdn_uploads_only', false );
-
-		/**
-		 * Filter the file extensions that will be served from the CDN. Expects an array of RegEx-style strings.
-		 *
-		 * @param array $extensions
-		 */
-		$this->extensions = apply_filters( 'dynamic_cdn_extensions', array( 'jpe?g', 'gif', 'png', 'bmp', 'js', 'ico' ) );
-
-		if ( ! is_admin() ) {
-			add_action( 'template_redirect', array( $this, 'template_redirect' ) );
-
-			if ( $this->uploads_only ) {
-				add_filter( 'the_content'/*'dynamic_cdn_content'*/, array( $this, 'filter_uploads_only' ) );
-			} else {
-				add_filter( 'dynamic_cdn_content', array( $this, 'filter' ) );
-			}
-
-			add_filter( 'wp_calculate_image_srcset', array( $this, 'srcsets' ), 10, 5 );
-
-			$this->site_domain = parse_url( get_bloginfo( 'url' ), PHP_URL_HOST );
-
-			/**
-			 * Update the stored site domain, should an aliasing plugin be used (for example)
-			 *
-			 * @param string $site_domain
-			 */
-			$this->site_domain = apply_filters( 'dynamic_cdn_site_domain', $this->site_domain );
-
-			if ( defined( 'DYNCDN_DOMAINS' ) ) {
-				$this->cdn_domains = explode( ',', DYNCDN_DOMAINS );
-				$this->cdn_domains = array_map( 'trim', $this->cdn_domains );
-				$this->has_domains = true;
-			}
-
-			/**
-			 * Programmatically control and/or override any CDN domains as passed in via a hard-coded constant.
-			 *
-			 * @param array $cdn_domains
-			 */
-			$this->cdn_domains = apply_filters( 'dynamic_cdn_default_domains', $this->cdn_domains );
-		}
+	if ( ! $manager->has_domains() ) {
+		return $content;
 	}
 
-	/**
-	 * Filter uploaded content (with the given extensions) and rewrite to a CDN.
-	 *
-	 * @param $content
-	 *
-	 * @return mixed
-	 */
-	public function filter_uploads_only( $content ) {
-		if ( ! $this->has_domains ) {
-			return $content;
-		}
+	$upload_dir = wp_upload_dir();
+	$upload_dir = $upload_dir['baseurl'];
+	$domain = preg_quote( parse_url( $upload_dir, PHP_URL_HOST ), '#' );
 
-		$upload_dir = wp_upload_dir();
-		$upload_dir = $upload_dir['baseurl'];
-		$domain = preg_quote( parse_url( $upload_dir, PHP_URL_HOST ), '#' );
+	$path = parse_url( $upload_dir, PHP_URL_PATH );
+	$preg_path = preg_quote( $path, '#' );
 
-		$path = parse_url( $upload_dir, PHP_URL_PATH );
-		$preg_path = preg_quote( $path, '#' );
+	// Targeted replace just on uploads URLs
+	return preg_replace_callback( "#=([\"'])(https?://{$domain})?$preg_path/((?:(?!\\1]).)+)\.(" . implode( '|', $manager->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", '\EAMann\Dynamic_CDN\Core\filter_cb', $content );
+}
 
-		// Targeted replace just on uploads URLs
-		return preg_replace_callback( "#=([\"'])(https?://{$domain})?$preg_path/((?:(?!\\1]).)+)\.(" . implode( '|', $this->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", array( $this, 'filter_cb' ), $content );
-	}
-	
-	
+/**
+ * Filter all static content (with the given extensions) and rewrite to a CDN.
+ *
+ * @param $content
+ *
+ * @return mixed
+ */
+function filter( $content ) {
+	$manager = DomainManager::current();
 
-
-	/**
-	 * Filter all static content (with the given extensions) and rewrite to a CDN.
-	 *
-	 * @param $content
-	 *
-	 * @return mixed
-	 */
-	public function filter( $content ) {
-		if ( ! $this->has_domains ) {
-			return $content;
-		}
-
-		$url = explode( '://', get_bloginfo( 'url' ) );
-		array_shift( $url );
-
-		/**
-		 * Modify the domain we're rewriting, should an aliasing plugin be used (for example)
-		 *
-		 * @param string $site_domain
-		 */
-		$url = apply_filters( 'dynamic_cdn_site_domain', rtrim( implode( '://', $url ), '/' ) );
-		$url = preg_quote( $url, '#' );
-
-		return preg_replace_callback( "#=([\"'])(https?://{$url})?/([^/](?:(?!\\1).)+)\.(" . implode( '|', $this->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", array( $this, 'filter_cb' ), $content );
+	if ( ! $manager->has_domains() ) {
+		return $content;
 	}
 
+	$url = explode( '://', get_bloginfo( 'url' ) );
+	array_shift( $url );
+
 	/**
-	 * Callback function used to automatically parse assets and replace the image src with a CDN version.
+	 * Modify the domain we're rewriting, should an aliasing plugin be used (for example)
 	 *
-	 * @param $matches
-	 *
-	 * @return string
+	 * @param string $site_domain
 	 */
-	protected function filter_cb( $matches ) {
-		$upload_dir = wp_upload_dir();
-		$upload_dir = $upload_dir['baseurl'];
-		$path = parse_url( $upload_dir, PHP_URL_PATH );
+	$url = apply_filters( 'dynamic_cdn_site_domain', rtrim( implode( '://', $url ), '/' ) );
+	$url = preg_quote( $url, '#' );
 
-		$domain = $this->cdn_domain( $matches[0] );
+	return preg_replace_callback( "#=([\"'])(https?://{$url})?/([^/](?:(?!\\1).)+)\.(" . implode( '|', $manager->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", '\EAMann\Dynamic_CDN\Core\filter_cb', $content );
+}
 
-		$url = explode( '://', get_bloginfo( 'url' ) );
-		array_shift( $url );
+/**
+ * Callback function used to automatically parse assets and replace the image src with a CDN version.
+ *
+ * @param $matches
+ *
+ * @return string
+ */
+function filter_cb( $matches ) {
+	$manager = DomainManager::current();
 
-		/**
-		 * Modify the domain we're rewriting, should an aliasing plugin be used (for example)
-		 *
-		 * @param string $site_domain
-		 */
-		$url = apply_filters( 'dynamic_cdn_site_domain', rtrim( implode( '://', $url ), '/' ) );
-		$url = str_replace( $this->site_domain, $domain, $url );
+	$upload_dir = wp_upload_dir();
+	$upload_dir = $upload_dir['baseurl'];
+	$path = parse_url( $upload_dir, PHP_URL_PATH );
 
-		// Make sure to use https if the request is over SSL
-		$scheme = is_ssl() ? 'https' : 'http';
+	$domain = $manager->cdn_domain( $matches[0] );
 
-		// Append query string, if its available
-		$query_string = isset( $matches[5] ) ? $matches[5] : '';
+	$url = explode( '://', get_bloginfo( 'url' ) );
+	array_shift( $url );
 
-		return "={$matches[1]}{$scheme}://{$url}/{$matches[3]}.{$matches[4]}{$query_string}{$matches[1]}";
-	}
-	
-} 
+	/**
+	 * Modify the domain we're rewriting, should an aliasing plugin be used (for example)
+	 *
+	 * @param string $site_domain
+	 */
+	$url = apply_filters( 'dynamic_cdn_site_domain', rtrim( implode( '://', $url ), '/' ) );
+	$url = str_replace( $manager->site_domain, $domain, $url );
+
+	// Make sure to use https if the request is over SSL
+	$scheme = is_ssl() ? 'https' : 'http';
+
+	// Append query string, if its available
+	$query_string = isset( $matches[5] ) ? $matches[5] : '';
+
+	return "={$matches[1]}{$scheme}://{$url}/{$matches[3]}.{$matches[4]}{$query_string}{$matches[1]}";
+}

@@ -6,7 +6,7 @@ use WP_Mock as M;
 
 /**
  * Class DomainManager_Tests
- * 
+ *
  * @package EAMann\Dynamic_CDN
  *
  * @runTestsInSeparateProcesses
@@ -88,5 +88,26 @@ class DomainManager_Tests extends TestCase {
 
 		// Verify
 		$this->assertEquals( $expected, $manager->new_url( $original ) );
+	}
+
+	public function test_has_domains() {
+		$manager = DomainManager( 'http://test.com' );
+		$this->assertFalse( $manager->has_domains() );
+
+		$manager->add( 'https://cdn1.com' );
+		$this->assertTrue( $manager->has_domains() );
+	}
+
+	public function test_default_manager() {
+		M::wpFunction( 'get_bloginfo', [
+			'args' => ['url'],
+			'return' => 'http://test.com'
+		] );
+
+		$manager = DomainManager::current();
+
+		$regular = DomainManager( 'http://test.com' );
+
+		$this->assertSame( $manager, $regular );
 	}
 }

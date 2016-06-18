@@ -32,17 +32,26 @@ class DomainManager {
 	/**
 	 * @var bool Flag to filter only uploaded content.
 	 */
-	protected $uploads_only = false;
+	public $uploads_only = false;
 
 	/**
 	 * @var array File extensions to filter.
 	 */
-	protected $extensions = array();
+	public $extensions = array();
 
 	/**
 	 * @var string
 	 */
-	protected $site_domain;
+	public $site_domain;
+
+	/**
+	 * Get the default domain manager for the current site.
+	 * 
+	 * @return DomainManager
+	 */
+	public static function current() {
+		return DomainManager( get_bloginfo( 'url' ) );
+	}
 	
 	public function __construct( $domain ) {
 		$this->site_domain = $domain;
@@ -114,5 +123,14 @@ class DomainManager {
 		$url = apply_filters( 'dynamic_cdn_site_domain', esc_url( $scheme . '://' . $url[0] ) );
 		
 		return str_replace( $url, $domain, $file_url );
+	}
+
+	/**
+	 * Verify whether or not the current manager has any registered CDN domains.
+	 * 
+	 * @return bool
+	 */
+	public function has_domains() {
+		return count( $this->cdn_domains ) > 0;
 	}
 }
