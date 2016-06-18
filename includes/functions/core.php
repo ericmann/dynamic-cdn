@@ -68,6 +68,30 @@ function init() {
 }
 
 /**
+ * Handles the WP 4.4 srcset Dynamic CDN support
+ *
+ * @param array  $sources
+ * @param array  $size_array
+ * @param string $image_src
+ * @param array  $image_meta
+ * @param int    $attachment_id
+ *
+ * @return mixed
+ */
+function srcsets( $sources, $size_array, $image_src, $image_meta, $attachment_id ) {
+
+	// If we shouldn't process, ABORT!
+	if( is_admin() || ! defined( 'DYNCDN_DOMAINS' ) ) {
+		return $sources;
+	}
+
+	// Iteratively update each srcset
+	array_walk( $sources, '\EAMann\Dynamic_CDN\Core\replace_srcset' );
+
+	return $sources;
+}
+
+/**
  * Replace the URL for a specific source in a srcset with a CDN'd version
  *
  * @param array $source
