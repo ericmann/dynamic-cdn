@@ -9,7 +9,6 @@ class Core_Tests extends Base\TestCase {
 	protected $testFiles = [
 		'functions/core.php'
 	];
-
 	
 	/**
 	 * Test load method.

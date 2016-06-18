@@ -1,6 +1,36 @@
 <?php
+/**
+ * The core namespace for the Dynamic CDN project
+ *
+ * @author Eric Mann <eric@eamann.com>
+ */
 
 namespace EAMann\Dynamic_CDN\Core;
+
+/**
+ * @var array Domain to use as a CDN.
+ */
+$cdn_domains = array();
+
+/**
+ * @var bool
+ */
+$has_domains = false;
+
+/**
+ * @var bool Flag to filter only uploaded content.
+ */
+$uploads_only = false;
+
+/**
+ * @var array File extensions to filter.
+ */
+$extensions = array();
+
+/**
+ * @var string
+ */
+$site_domain = '';
 
 /**
  * Default setup routine
