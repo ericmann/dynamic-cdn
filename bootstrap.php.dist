@@ -1,6 +1,10 @@
 <?php
 if ( ! defined( 'PROJECT' ) ) {
-	define( 'PROJECT', __DIR__ . '/php/' );
+	define( 'PROJECT', __DIR__ . '/includes/' );
+}
+
+if ( ! defined( 'DYNCDN_PATH' ) ) {
+	define( 'DYNCDN_PATH', 'path' );
 }
 
 if ( ! file_exists( __DIR__ . '/vendor/autoload.php' ) ) {

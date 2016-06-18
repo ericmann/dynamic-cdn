@@ -5,12 +5,12 @@
 	colors="false">
 	<testsuites>
 		<testsuite name="Default">
-			<directory suffix="Test.php">./tests/phpunit</directory>
+			<directory suffix="Tests.php">./tests/phpunit</directory>
 		</testsuite>
 	</testsuites>
 	<filter>
 		<whitelist>
-			<directory suffix=".php">./php</directory>
+			<directory suffix=".php">./includes</directory>
 		</whitelist>
 	</filter>
 	<php>

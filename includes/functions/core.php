@@ -1,5 +1,40 @@
 <?php
 
+namespace EAMann\Dynamic_CDN\Core;
+
+/**
+ * Default setup routine
+ *
+ * @uses add_action()
+ * @uses do_action()
+ *
+ * @return void
+ */
+function setup() {
+	$n = function( $function ) {
+		return __NAMESPACE__ . "\\$function";
+	};
+	
+	add_action( 'init', $n( 'init' ) );
+
+	/**
+	 * Allow other plugins (i.e. mu-plugins) to hook in and populate the CDN domain array.
+	 */
+	do_action( 'dynamic_cdn_first_loaded' );
+}
+
+
+/**
+ * Initializes the plugin and fires an action other plugins can hook into.
+ *
+ * @uses do_action()
+ *
+ * @return void
+ */
+function init() {
+	do_action( 'dynamic_cdn_init' );
+}
+
 /**
  * Dynamic CDN object
  *

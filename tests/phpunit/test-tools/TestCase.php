@@ -1,6 +1,6 @@
 <?php
 
-namespace EAMann;
+namespace EAMann\Dynamic_CDN;
 
 use PHPUnit_Framework_TestResult;
 use Text_Template;
