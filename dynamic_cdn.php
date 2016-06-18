@@ -34,7 +34,7 @@ define( 'DYNCDN_URL',     plugin_dir_url( __FILE__ ) );
 define( 'DYNCDN_PATH',    dirname( __FILE__ ) . '/' );
 
 // Requires
-require_once DYNCDN_PATH . 'class.dynamic_cdn.php';
+require_once DYNCDN_PATH . 'php/class.dynamic_cdn.php';
 
 function dynamic_cdn_init() {
 	Dynamic_CDN::factory();
