@@ -136,36 +136,7 @@ function ob( $contents ) {
  * @package Dynamic CDN
  */
 class Dynamic_CDN {
-
-	/**
-	 * @var array Domain to use as a CDN.
-	 */
-	protected $cdn_domains = array();
-
-	/**
-	 * @var bool
-	 */
-	protected $has_domains = false;
-
-	/**
-	 * @var bool Flag to filter only uploaded content.
-	 */
-	protected $uploads_only;
-
-	/**
-	 * @var array File extensions to filter.
-	 */
-	protected $extensions;
-
-	/**
-	 * @var string
-	 */
-	protected $site_domain;
-
-	/**
-	 * Dynamic_CDN constructor.
-	 */
-	public function __construct() {}
+	
 
 	/**
 	 * Initialize the object and make sure the proper hooks are wired up.
@@ -242,59 +213,8 @@ class Dynamic_CDN {
 		// Targeted replace just on uploads URLs
 		return preg_replace_callback( "#=([\"'])(https?://{$domain})?$preg_path/((?:(?!\\1]).)+)\.(" . implode( '|', $this->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", array( $this, 'filter_cb' ), $content );
 	}
-
-	/**
-	 * Handles the WP 4.4 srcset Dynamic CDN support
-	 *
-	 * @param $sources
-	 * @param $size_array
-	 * @param $image_src
-	 * @param $image_meta
-	 * @param $attachment_id
-	 *
-	 * @return mixed
-	 */
-	public function srcsets( $sources, $size_array, $image_src, $image_meta, $attachment_id ) {
-
-		if( is_admin() ) {
-			return $sources;
-		}
-
-		if( ! defined( 'DYNCDN_DOMAINS' ) ) {
-			return $sources;
-		}
-		// Iteratively update each srcset
-		array_walk( $sources, array( $this, 'replace_srcset' ) );
-		return $sources;
-	}
-
-	/**
-	 * Replace the URL for a specific source in a srcset with a CDN'd version
-	 *
-	 * @param array $source
-	 *
-	 * @return array
-	 */
-	protected function replace_srcset( &$source ) {
-		$source['url'] = DomainManager::$global->new_url( $source['url'] );
-		$cdn_domain = $this->cdn_domain( basename( $source['url'] ) );
-		$url = explode( '://', get_bloginfo( 'url' ) );
-		array_shift( $url );
-
-		/**
-		 * Allows plugins to override the HTTPS protocol
-		 */
-		$scheme = apply_filters( 'dynamic_cdn_protocol', ( is_ssl() ? 'https' : 'http' ) );
-
-		/**
-		 * Modify the domain we're rewriting, should an aliasing plugin be used (for example)
-		 *
-		 * @param string $site_domain
-		 */
-		$url = apply_filters( 'dynamic_cdn_site_domain', esc_url( $scheme . '://' . $url ) );
-		$source['url'] = str_replace( $url, $cdn_domain, $source['url'] );
-		return $source;
-	}
+	
+	
 
 
 	/**
@@ -356,45 +276,5 @@ class Dynamic_CDN {
 
 		return "={$matches[1]}{$scheme}://{$url}/{$matches[3]}.{$matches[4]}{$query_string}{$matches[1]}";
 	}
-
-	/**
-	 * Create an output buffer so we can dynamically rewrite any URLs going out.
-	 */
-	public function template_redirect() {
-		ob_start( array( $this, 'ob' ) );
-	}
-
-	/**
-	 * Callback function for the output buffer that allows us to filter content.
-	 *
-	 * @param $contents
-	 *
-	 * @return mixed|void
-	 */
-	public function ob( $contents ) {
-		/**
-		 * Filter the content from the output buffer
-		 *
-		 * @param string      $contents
-		 * @param Dynamic_CDN $this
-		 */
-		return apply_filters( 'dynamic_cdn_content', $contents, $this );
-	}
-
-	/**
-	 * Factory method for grabbing a single instance of the CDN object.
-	 *
-	 * Much better than Singleton-instantiation ;-)
-	 *
-	 * @return Dynamic_CDN
-	 */
-	public static function factory() {
-		static $instance = false;
-
-		if ( false === $instance ) {
-			$instance = new self;
-		}
-
-		return $instance;
-	}
+	
 } 

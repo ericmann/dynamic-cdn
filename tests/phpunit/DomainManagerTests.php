@@ -4,6 +4,13 @@ namespace EAMann\Dynamic_CDN;
 use Mockery\Mock;
 use WP_Mock as M;
 
+/**
+ * Class DomainManager_Tests
+ * 
+ * @package EAMann\Dynamic_CDN
+ *
+ * @runTestsInSeparateProcesses
+ */
 class DomainManager_Tests extends TestCase {
 	protected $testFiles = [
 		'classes/DomainManager.php'
@@ -12,10 +19,12 @@ class DomainManager_Tests extends TestCase {
 	public function test_companion_constructor() {
 		$first = new DomainManager( 'http://test.com' );
 		$second = DomainManager( 'http://test2.com' );
+		$third = DomainManager( 'http://test2.com' );
 
 		$this->assertNotSame( $second, $first );
 		$this->assertInstanceOf( '\EAMann\Dynamic_CDN\DomainManager', $first );
 		$this->assertInstanceOf( '\EAMann\Dynamic_CDN\DomainManager', $second );
+		$this->assertSame( $second, $third );
 	}
 
 	public function test_adds_domains() {

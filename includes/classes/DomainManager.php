@@ -9,7 +9,13 @@ namespace EAMann\Dynamic_CDN;
  * @return DomainManager
  */
 function DomainManager( $domain ) {
-	return new DomainManager( $domain );
+	static $managers = array();
+	
+	if ( ! isset( $managers[ $domain ] ) ) {
+		$managers[ $domain ] = new DomainManager( $domain );
+	}
+
+	return $managers[ $domain ];
 }
 
 class DomainManager {
