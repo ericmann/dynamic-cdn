@@ -35,4 +35,49 @@ class DomainManager_Tests extends TestCase {
 		$this->assertEquals( $manager->cdn_domain( 'file1.jpg' ), $manager->cdn_domain( 'file1.jpg' ) );
 		$this->assertNotEquals( $manager->cdn_domain( 'file1.jpg' ), $manager->cdn_domain( 'file2.jpg' ) );
 	}
+
+	public function test_domain_replacement() {
+		$manager = DomainManager( 'http://test.com' );
+		$manager->add( 'http://cdn1.com' );
+
+		$original = 'http://test.com/image.png';
+		$expected = 'http://cdn1.com/image.png';
+
+		// Mocks
+		M::wpFunction( 'is_ssl', [ 'return' => false ] );
+		M::wpPassthruFunction( 'esc_url' );
+
+		// Verify
+		$this->assertEquals( $expected, $manager->new_url( $original ) );
+	}
+
+	public function test_domain_replacement_ssl() {
+		$manager = DomainManager( 'https://test.com' );
+		$manager->add( 'https://cdn1.com' );
+
+		$original = 'https://test.com/image.png';
+		$expected = 'https://cdn1.com/image.png';
+
+		// Mocks
+		M::wpFunction( 'is_ssl', [ 'return' => true ] );
+		M::wpPassthruFunction( 'esc_url' );
+
+		// Verify
+		$this->assertEquals( $expected, $manager->new_url( $original ) );
+	}
+
+	public function test_domain_replacement_mixed() {
+		$manager = DomainManager( 'http://test.com' );
+		$manager->add( 'https://cdn1.com' );
+
+		$original = 'http://test.com/image.png';
+		$expected = 'https://cdn1.com/image.png';
+
+		// Mocks
+		M::wpFunction( 'is_ssl', [ 'return' => false ] );
+		M::wpPassthruFunction( 'esc_url' );
+
+		// Verify
+		$this->assertEquals( $expected, $manager->new_url( $original ) );
+	}
 }

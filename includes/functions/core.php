@@ -10,6 +10,8 @@ namespace EAMann\Dynamic_CDN\Core;
 /**
  * @var array Domain to use as a CDN.
  */
+use EAMann\Dynamic_CDN\DomainManager;
+
 $cdn_domains = array();
 
 /**
@@ -63,6 +65,43 @@ function setup() {
  */
 function init() {
 	do_action( 'dynamic_cdn_init' );
+}
+
+/**
+ * Replace the URL for a specific source in a srcset with a CDN'd version
+ *
+ * @param array $source
+ *
+ * @return array
+ */
+function replace_srcset( &$source ) {
+	$source['url'] = DomainManager::$global->new_url( $source['url'] );
+
+	return $source;
+}
+
+/**
+ * Create an output buffer so we can dynamically rewrite any URLs going out.
+ */
+function template_redirect() {
+	ob_start( '\EAMann\Dynamic_CDN\Core\ob' );
+}
+
+/**
+ * Callback function for the output buffer that allows us to filter content.
+ *
+ * @param $contents
+ *
+ * @return mixed|void
+ */
+function ob( $contents ) {
+	/**
+	 * Filter the content from the output buffer
+	 *
+	 * @param string      $contents
+	 * @param Dynamic_CDN $this
+	 */
+	return apply_filters( 'dynamic_cdn_content', $contents, DomainManager::$global );
 }
 
 /**
@@ -158,37 +197,6 @@ class Dynamic_CDN {
 	}
 
 	/**
-	 * Add a CDN domain to the collection.
-	 *
-	 * @param string $domain
-	 */
-	public function add_domain( $domain ) {
-		$this->cdn_domains[] = $domain;
-
-		$this->has_domains = true;
-	}
-
-	/**
-	 * Get a CDN path for a given file, using a reduced checksum to automatically select from an array of available domains.
-	 *
-	 * @param string $file_path
-	 *
-	 * @return string
-	 */
-	public function cdn_domain( $file_path ) {
-		// First, get a checksum for the file path to give us the index we'll use from the CDN domain array.
-		$index = abs( crc32( $file_path ) ) % count( $this->cdn_domains );
-
-		/**
-		 * Return the correct CDN path to the file.
-		 *
-		 * @param string $cdn_domain
-		 * @param string $file_path
-		 */
-		return apply_filters( 'dynamic_cdn_domain_for_file', $this->cdn_domains[ $index ], $file_path );
-	}
-
-	/**
 	 * Filter uploaded content (with the given extensions) and rewrite to a CDN.
 	 *
 	 * @param $content
@@ -244,6 +252,7 @@ class Dynamic_CDN {
 	 * @return array
 	 */
 	protected function replace_srcset( &$source ) {
+		$source['url'] = DomainManager::$global->new_url( $source['url'] );
 		$cdn_domain = $this->cdn_domain( basename( $source['url'] ) );
 		$url = explode( '://', get_bloginfo( 'url' ) );
 		array_shift( $url );

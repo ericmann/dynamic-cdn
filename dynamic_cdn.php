@@ -35,6 +35,7 @@ define( 'DYNCDN_PATH',    dirname( __FILE__ ) . '/' );
 define( 'DYNCDN_INC',     DYNCDN_PATH . 'includes/' );
 
 // Include Files
+require_once DYNCDN_INC . 'classes/DomainManager.php';
 require_once DYNCDN_INC . 'functions/core.php';
 
 // Activation/Deactivation

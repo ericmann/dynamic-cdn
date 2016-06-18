@@ -14,6 +14,11 @@ function DomainManager( $domain ) {
 
 class DomainManager {
 	/**
+	 * @var DomainManager Global instance - overwritten whenever the constructor is called
+	 */
+	public static $global;
+	
+	/**
 	 * @var array Domain to use as a CDN.
 	 */
 	protected $cdn_domains = array();
@@ -40,6 +45,8 @@ class DomainManager {
 	
 	public function __construct( $domain ) {
 		$this->site_domain = $domain;
+		
+		self::$global = $this;
 	}
 
 	/**
@@ -79,5 +86,34 @@ class DomainManager {
 		 * @param string $file_path
 		 */
 		return apply_filters( 'dynamic_cdn_domain_for_file', $this->cdn_domains[ $index ], $file_path );
+	}
+
+	/**
+	 * Potentially replace a given file URL with a CDN-ified version
+	 * 
+	 * @param string $file_url
+	 * 
+	 * @return string
+	 */
+	public function new_url( $file_url ) {
+		$domain = $this->cdn_domain( basename( $file_url ) );
+		$url = explode( '://', $this->site_domain );
+		array_shift( $url );
+
+		/**
+		 * Allows plugins to override the HTTPS protocol
+		 * 
+		 * @param string $scheme
+		 */
+		$scheme = apply_filters( 'dynamic_cdn_protocol', ( is_ssl() ? 'https' : 'http' ) );
+
+		/**
+		 * Modify the domain we're rewriting, should an aliasing plugin be used (for example)
+		 *
+		 * @param string $site_domain
+		 */
+		$url = apply_filters( 'dynamic_cdn_site_domain', esc_url( $scheme . '://' . $url[0] ) );
+		
+		return str_replace( $url, $domain, $file_url );
 	}
 }
