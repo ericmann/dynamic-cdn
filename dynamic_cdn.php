@@ -28,6 +28,7 @@
  */
 
 // Useful global constants
+
 define( 'DYNCDN_VERSION', '0.3.0' );
 define( 'DYNCDN_URL',     plugin_dir_url( __FILE__ ) );
 define( 'DYNCDN_PATH',    dirname( __FILE__ ) . '/' );
