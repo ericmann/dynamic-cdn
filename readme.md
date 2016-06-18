@@ -1,4 +1,5 @@
-# Dynamic CDN #
+# Dynamic CDN # [![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url]
+
 **Contributors:**      [ericmann](https://profiles.wordpress.org/ericmann), [10up](https://profiles.wordpress.org/10up)  
 **Donate link:**       https://jumping-duck.com  
 **Tags:**              CDN, images, performance  
@@ -70,3 +71,8 @@ None at this time.
 
 ### 0.1.0 ###
 First Release
+
+[travis-image]: https://travis-ci.org/ericmann/dynamic-cdn.svg?branch=master
+[travis-url]: https://travis-ci.org/ericmann/dynamic-cdn
+[coveralls-image]: https://coveralls.io/repos/ericmann/dynamic-cdn/badge.svg?branch=master&service=github
+[coveralls-url]: https://coveralls.io/github/ericmann/dynamic-cdn?branch=master
