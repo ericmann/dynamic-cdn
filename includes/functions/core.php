@@ -7,32 +7,7 @@
 
 namespace EAMann\Dynamic_CDN\Core;
 
-/**
- * @var array Domain to use as a CDN.
- */
 use EAMann\Dynamic_CDN\DomainManager;
-
-$cdn_domains = array();
-
-/**
- * @var bool
- */
-$has_domains = false;
-
-/**
- * @var bool Flag to filter only uploaded content.
- */
-$uploads_only = false;
-
-/**
- * @var array File extensions to filter.
- */
-$extensions = array();
-
-/**
- * @var string
- */
-$site_domain = '';
 
 /**
  * Default setup routine
@@ -86,22 +61,34 @@ function srcsets( $sources, $size_array, $image_src, $image_meta, $attachment_id
 	}
 
 	// Iteratively update each srcset
-	array_walk( $sources, '\EAMann\Dynamic_CDN\Core\replace_srcset' );
+	$replacer = srcset_replacer( get_bloginfo( 'url' ) );
+	array_walk( $sources, $replacer );
 
 	return $sources;
 }
 
 /**
- * Replace the URL for a specific source in a srcset with a CDN'd version
- *
- * @param array $source
- *
- * @return array
+ * Create a domain-specific srcset replacement function for use in array iterations
+ * 
+ * @param string $domain
+ * 
+ * @return \Closure
  */
-function replace_srcset( &$source ) {
-	$source['url'] = DomainManager::$global->new_url( $source['url'] );
+function srcset_replacer( $domain ) {
+	$manager = \EAMann\Dynamic_CDN\DomainManager( $domain );
 
-	return $source;
+	/**
+	 * Replace the URL for a specific source in a srcset with a CDN'd version
+	 *
+	 * @param array $source
+	 *
+	 * @return array
+	 */
+	return function( &$source ) use ( $manager ) {
+		$source['url'] = $manager->new_url( $source['url'] );
+
+		return $source;
+	};
 }
 
 /**
@@ -119,13 +106,15 @@ function template_redirect() {
  * @return mixed|void
  */
 function ob( $contents ) {
+	$manager = \EAMann\Dynamic_CDN\DomainManager( get_bloginfo( 'url' ) );
+
 	/**
 	 * Filter the content from the output buffer
 	 *
 	 * @param string      $contents
 	 * @param Dynamic_CDN $this
 	 */
-	return apply_filters( 'dynamic_cdn_content', $contents, DomainManager::$global );
+	return apply_filters( 'dynamic_cdn_content', $contents, $manager );
 }
 
 /**
@@ -135,7 +124,7 @@ function ob( $contents ) {
  *
  * @package Dynamic CDN
  */
-class Dynamic_CDN {
+class Old_Dynamic_CDN {
 	
 
 	/**

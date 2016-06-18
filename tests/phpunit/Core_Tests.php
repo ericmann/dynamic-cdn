@@ -52,6 +52,8 @@ class Core_Tests extends Base\TestCase {
 			'url' => 'http://test.com/image.jpg'
 		];
 
-		$this->assertEquals( 'https://cdn1.com/image.jpg', replace_srcset( $source )['url'] );
+		$replacer = srcset_replacer( 'http://test.com' );
+
+		$this->assertEquals( 'https://cdn1.com/image.jpg', $replacer( $source )['url'] );
 	}
 }

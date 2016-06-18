@@ -20,11 +20,6 @@ function DomainManager( $domain ) {
 
 class DomainManager {
 	/**
-	 * @var DomainManager Global instance - overwritten whenever the constructor is called
-	 */
-	public static $global;
-	
-	/**
 	 * @var array Domain to use as a CDN.
 	 */
 	protected $cdn_domains = array();
@@ -51,8 +46,6 @@ class DomainManager {
 	
 	public function __construct( $domain ) {
 		$this->site_domain = $domain;
-		
-		self::$global = $this;
 	}
 
 	/**
