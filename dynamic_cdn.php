@@ -32,18 +32,15 @@
 define( 'DYNCDN_VERSION', '0.3.0' );
 define( 'DYNCDN_URL',     plugin_dir_url( __FILE__ ) );
 define( 'DYNCDN_PATH',    dirname( __FILE__ ) . '/' );
+define( 'DYNCDN_INC',     DYNCDN_PATH . 'includes/' );
 
-// Requires
-require_once DYNCDN_PATH . 'class.dynamic_cdn.php';
+// Include Files
+require_once DYNCDN_INC . 'classes/DomainManager.php';
+require_once DYNCDN_INC . 'functions/core.php';
 
-function dynamic_cdn_init() {
-	Dynamic_CDN::factory();
+// Activation/Deactivation
+register_activation_hook(   __FILE__, '\EAMann\Dynamic_CDN\Core\activate'   );
+register_deactivation_hook( __FILE__, '\EAMann\Dynamic_CDN\Core\deactivate' );
 
-	/**
-	 * Allow other plugins (i.e. mu-plugins) to hook in and populate the CDN domain array.
-	 */
-	do_action( 'dynamic_cdn_first_loaded' );
-
-	Dynamic_CDN::factory()->init();
-}
-add_action( 'init', 'dynamic_cdn_init' );
+// Bootstrap
+EAMann\Dynamic_CDN\Core\setup();

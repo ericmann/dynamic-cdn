@@ -1,10 +1,11 @@
-# Dynamic CDN #
+# Dynamic CDN # [![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url]
+
 **Contributors:**      [ericmann](https://profiles.wordpress.org/ericmann), [10up](https://profiles.wordpress.org/10up)  
 **Donate link:**       https://jumping-duck.com  
 **Tags:**              CDN, images, performance  
 **Requires at least:** 3.8.1  
 **Tested up to:**      4.5.2  
-**Stable tag:**        0.3.0  
+**Stable tag:**        0.4.0-rc1  
 **License:**           GPLv2 or later  
 **License URI:**       http://www.gnu.org/licenses/gpl-2.0.html  
 
@@ -34,9 +35,10 @@ Yes.  The plugin, as designed, will work just fine in the mu-plugins directory. 
 In a function wired to `dynamic_cdn_first_loaded`, you'll reference the `->add_domain()` method of the `Dynamic_CDN` object.  For example:
 
     function my_cdn_domains() {
-        Dynamic_CDN::factory()->add_domain( 'cdn0.mydomain.com' );
-        Dynamic_CDN::factory()->add_domain( 'cdn1.mydomain.com' );
-        Dynamic_CDN::factory()->add_domain( 'cdn2.mydomain.com' );
+        $manager = DomainManager::last();
+        $manager->add( 'cdn0.mydomain.com' );
+        $manager->add( 'cdn1.mydomain.com' );
+        $manager->add( 'cdn2.mydomain.com' );
     }
     add_action( 'dynamic_cdn_first_loaded', 'my_cdn_domains' );
 
@@ -56,6 +58,10 @@ None at this time.
 
 ## Changelog ##
 
+### 0.4.0 ###
+* New: Unit tests for core functionality
+* Fix: Ensure srcsets don't filter in admin views
+
 ### 0.3.0 ###
 * New: Add support for WordPress 4.4 srcsets
 
@@ -68,5 +74,16 @@ None at this time.
 
 ## Upgrade Notice ##
 
+### 0.4.0 ###
+Domain management has moved from a general-purpose class to a purpose-built `DomainManager` object. This object is
+instantiated with your current site's domain name, and can be accessed throught the static `DomainManager::last()` helper.
+(This method automatically returns the last-instantiated domain manager). If you weren't manipulating CdN domains
+programmatically, you won't need to change anything at all.
+
 ### 0.1.0 ###
 First Release
+
+[travis-image]: https://travis-ci.org/ericmann/dynamic-cdn.svg?branch=master
+[travis-url]: https://travis-ci.org/ericmann/dynamic-cdn
+[coveralls-image]: https://coveralls.io/repos/ericmann/dynamic-cdn/badge.svg?branch=master&service=github
+[coveralls-url]: https://coveralls.io/github/ericmann/dynamic-cdn?branch=master

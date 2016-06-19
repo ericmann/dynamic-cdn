@@ -2,7 +2,7 @@
 	"name": "dynamic-cdn",
 	"title": "Dynamic CDN",
 	"description": "Dynamic CDN for front-end assets.",
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"homepage": "https://jumping-duck.com",
 	"repository": {
 		"type": "git",
