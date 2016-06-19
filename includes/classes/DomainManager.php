@@ -45,6 +45,11 @@ class DomainManager {
 	public $site_domain;
 
 	/**
+	 * @var DomainManager Most recently-created manager
+	 */
+	protected static $last;
+
+	/**
 	 * Get the default domain manager for the current site.
 	 * 
 	 * @return DomainManager
@@ -52,9 +57,26 @@ class DomainManager {
 	public static function current() {
 		return DomainManager( get_bloginfo( 'url' ) );
 	}
+
+	/**
+	 * Fetch the most recently-created domain manager.
+	 * While manager creation should be explicit, this gives us the ability
+	 * to skip fetching the 'current' manager if we know there's only one (and
+	 * instead just grab it directly).
+	 *
+	 * Note: This can be unstable if, for some reason, multiple managers are created
+	 * using differing root domains!
+	 *
+	 * @return DomainManager
+	 */
+	public static function last() {
+		return self::$last;
+	}
 	
 	public function __construct( $domain ) {
 		$this->site_domain = $domain;
+
+		self::$last = $this;
 	}
 
 	/**

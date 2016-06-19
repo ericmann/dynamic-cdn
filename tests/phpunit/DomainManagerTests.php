@@ -110,4 +110,12 @@ class DomainManager_Tests extends TestCase {
 
 		$this->assertSame( $manager, $regular );
 	}
+
+	public function test_last_manager() {
+		$manager = DomainManager( 'http://test.com' );
+
+		$last = DomainManager::last();
+
+		$this->assertSame( $manager, $last );
+	}
 }
