@@ -16,7 +16,8 @@ class Core_Tests extends Base\TestCase {
 	 */
 	public function test_setup() {
 		// Setup
-		M::expectActionAdded( 'init', 'EAMann\Dynamic_CDN\Core\init' );
+		M::expectActionAdded( 'init',             'EAMann\Dynamic_CDN\Core\init' );
+		M::expectActionAdded( 'dynamic_cdn_init', 'EAMann\Dynamic_CDN\Core\initialize_manager' );
 		M::expectAction( 'dynamic_cdn_first_loaded' );
 
 		// Act
