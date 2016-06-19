@@ -135,7 +135,7 @@ function srcsets( $sources, $size_array, $image_src, $image_meta, $attachment_id
  * @return \Closure
  */
 function srcset_replacer( $domain ) {
-	$manager = \EAMann\Dynamic_CDN\DomainManager( $domain );
+	$manager = DomainManager::last();
 
 	/**
 	 * Replace the URL for a specific source in a srcset with a CDN'd version
@@ -166,7 +166,7 @@ function template_redirect() {
  * @return mixed|void
  */
 function ob( $contents ) {
-	$manager = \EAMann\Dynamic_CDN\DomainManager( get_bloginfo( 'url' ) );
+	$manager = DomainManager::last();
 
 	/**
 	 * Filter the content from the output buffer
@@ -185,7 +185,7 @@ function ob( $contents ) {
  * @return mixed
  */
 function filter_uploads_only( $content ) {
-	$manager = DomainManager::current();
+	$manager = DomainManager::last();
 
 	if ( ! $manager->has_domains() ) {
 		return $content;
@@ -210,7 +210,7 @@ function filter_uploads_only( $content ) {
  * @return mixed
  */
 function filter( $content ) {
-	$manager = DomainManager::current();
+	$manager = DomainManager::last();
 
 	if ( ! $manager->has_domains() ) {
 		return $content;
@@ -238,7 +238,7 @@ function filter( $content ) {
  * @return string
  */
 function filter_cb( $matches ) {
-	$manager = DomainManager::current();
+	$manager = DomainManager::last();
 
 	$upload_dir = wp_upload_dir();
 	$upload_dir = $upload_dir['baseurl'];
