@@ -22,7 +22,7 @@ class Dynamic_CDN {
 	/**
 	 * @var bool Flag to filter only uploaded content.
 	 */
-	protected $uploads_only;
+	protected $uploads_only = false;
 
 	/**
 	 * @var array File extensions to filter.
@@ -43,14 +43,18 @@ class Dynamic_CDN {
 		$filter_priority = apply_filters( 'dynamic_cdn_filter_priority', 10 );
 		$action_priority = apply_filters( 'dynamic_cdn_action_priority', 10 );
 		
-		$this->uploads_only = apply_filters( 'dynamic_cdn_uploads_only', false );
+		if ( defined( 'DYNCDN_UPLOADS_ONLY' ) ){
+			$this->uploads_only = DYNCDN_UPLOADS_ONLY;
+		}
+		
+		$this->uploads_only = apply_filters( 'dynamic_cdn_uploads_only', $this->uploads_only );
 		$this->extensions = apply_filters( 'dynamic_cdn_extensions', array( 'jpe?g', 'gif', 'png', 'bmp', 'js', 'css', 'ico' ) );
 
 		if ( ! is_admin() ) {
 			add_action( 'template_redirect', array( $this, 'template_redirect' ), $action_priority );
 
 			if ( $this->uploads_only ) {
-				add_filter( 'the_content'/*'dynamic_cdn_content'*/, array( $this, 'filter_uploads_only' ), $filter_priority );
+				add_filter( 'dynamic_cdn_content', array( $this, 'filter_uploads_only' ), $filter_priority );
 			} else {
 				add_filter( 'dynamic_cdn_content', array( $this, 'filter' ), $filter_priority );
 			}
@@ -225,4 +229,4 @@ class Dynamic_CDN {
 
 		return $instance;
 	}
-} 
+}
