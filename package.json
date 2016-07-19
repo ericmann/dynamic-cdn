@@ -1,18 +1,21 @@
 {
-  "name": "dynamic-cdn",
-  "title": "Dynamic CDN",
-  "description": "Dynamic CDN for front-end assets.",
-  "version": "0.1.0",
-  "homepage": "http://10up.com",
-  "repository": {},
-  "author": {
-    "name": "10up",
-    "email": "sales@10up.com",
-    "url": "http://10up.com"
-  },
-  "devDependencies": {
-	  "grunt": "~0.4.2",
-	  "grunt-wp-readme-to-markdown": "~0.6.0"
-  },
-  "keywords": []
+	"name": "dynamic-cdn",
+	"title": "Dynamic CDN",
+	"description": "Dynamic CDN for front-end assets.",
+	"version": "0.4.0",
+	"homepage": "https://jumping-duck.com",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/ericmann/dynamic-cdn.git"
+	},
+	"author": {
+		"name": "Eric Mann",
+		"email": "eric@eamann.com",
+		"url": "https://eamann.com"
+	},
+	"devDependencies": {
+		"grunt": "~1.0.1",
+		"grunt-wp-readme-to-markdown": "~2.0.0"
+	},
+	"keywords": []
 }
