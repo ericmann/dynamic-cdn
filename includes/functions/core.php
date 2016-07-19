@@ -73,13 +73,19 @@ function initialize_manager() {
 	 */
 	$manager->extensions = apply_filters( 'dynamic_cdn_extensions', array( 'jpe?g', 'gif', 'png', 'bmp', 'js', 'ico' ) );
 
+	/**
+	 * Set Hook Priorities
+	 */
+	$filter_priority = apply_filters( 'dynamic_cdn_filter_priority', 10 );
+	$action_priority = apply_filters( 'dynamic_cdn_action_priority', 10 );
+
 	if ( ! is_admin() ) {
-		add_action( 'template_redirect', '\EAMann\Dynamic_CDN\Core\template_redirect' );
+		add_action( 'template_redirect', '\EAMann\Dynamic_CDN\Core\template_redirect', $action_priority );
 
 		if ( $manager->uploads_only ) {
-			add_filter( 'the_content'/*'dynamic_cdn_content'*/, '\EAMann\Dynamic_CDN\Core\filter_uploads_only' );
+			add_filter( 'dynamic_cdn_content', '\EAMann\Dynamic_CDN\Core\filter_uploads_only', $filter_priority );
 		} else {
-			add_filter( 'dynamic_cdn_content', '\EAMann\Dynamic_CDN\Core\filter' );
+			add_filter( 'dynamic_cdn_content', '\EAMann\Dynamic_CDN\Core\filter', $filter_priority );
 		}
 
 		add_filter( 'wp_calculate_image_srcset', '\EAMann\Dynamic_CDN\Core\srcsets', 10, 5 );
@@ -193,13 +199,16 @@ function filter_uploads_only( $content ) {
 
 	$upload_dir = wp_upload_dir();
 	$upload_dir = $upload_dir['baseurl'];
-	$domain = preg_quote( parse_url( $upload_dir, PHP_URL_HOST ), '#' );
+	$url_parts = parse_url( $upload_dir );
+	$domain = $url_parts['host'] . ( $url_parts['port'] ? ':' . $url_parts['port'] : '' );
+	$domain = preg_quote( $domain, '#' );
 
 	$path = parse_url( $upload_dir, PHP_URL_PATH );
 	$preg_path = preg_quote( $path, '#' );
 
 	// Targeted replace just on uploads URLs
-	return preg_replace_callback( "#=([\"'])(https?://{$domain})?$preg_path/((?:(?!\\1]).)+)\.(" . implode( '|', $manager->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", '\EAMann\Dynamic_CDN\Core\filter_cb', $content );
+	$pattern = "#=([\"'])(https?://{$domain})?$preg_path/((?:(?!\\1]).)+)\.(" . implode( '|', $manager->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#";
+	return preg_replace_callback( $pattern , array( $this, 'filter_cb' ), $content );
 }
 
 /**
@@ -227,7 +236,8 @@ function filter( $content ) {
 	$url = apply_filters( 'dynamic_cdn_site_domain', rtrim( implode( '://', $url ), '/' ) );
 	$url = preg_quote( $url, '#' );
 
-	return preg_replace_callback( "#=([\"'])(https?://{$url})?/([^/](?:(?!\\1).)+)\.(" . implode( '|', $manager->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", '\EAMann\Dynamic_CDN\Core\filter_cb', $content );
+	$pattern = "#=(\\\?[\"'])(https?:\\\?/\\\?/{$url})?\\\?/([^/](?:(?!\\1).)+)\.(" . implode( '|', $manager->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#";
+	return preg_replace_callback( $pattern, array( $this, 'filter_cb' ), $content );
 }
 
 /**
@@ -258,7 +268,7 @@ function filter_cb( $matches ) {
 	$url = str_replace( $manager->site_domain, $domain, $url );
 
 	// Make sure to use https if the request is over SSL
-	$scheme = is_ssl() ? 'https' : 'http';
+	$scheme = apply_filters( 'dynamic_cdn_protocol', ( is_ssl() ? 'https' : 'http' ) );
 
 	// Append query string, if its available
 	$query_string = isset( $matches[5] ) ? $matches[5] : '';
