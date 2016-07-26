@@ -23,7 +23,7 @@ function setup() {
 	$n = function( $function ) {
 		return __NAMESPACE__ . "\\$function";
 	};
-	
+
 	add_action( 'init',             $n( 'init' ) );
 	add_action( 'dynamic_cdn_init', $n( 'initialize_manager' ) );
 
@@ -51,7 +51,9 @@ function init() {
 function initialize_manager() {
 	global $dyncd_context;
 
-	$site_domain = parse_url( get_bloginfo( 'url' ), PHP_URL_HOST );
+	$url_parts = parse_url( get_bloginfo( 'url' ) );
+
+	$site_domain = $url_parts['host'] . ($url_parts['port'] ? ':' . $url_parts['port'] : '');
 
 	/**
 	 * Update the stored site domain, should an aliasing plugin be used (for example)
@@ -146,9 +148,9 @@ function srcsets( $sources, $size_array, $image_src, $image_meta, $attachment_id
 
 /**
  * Create a domain-specific srcset replacement function for use in array iterations
- * 
+ *
  * @param string $domain
- * 
+ *
  * @return \Closure
  */
 function srcset_replacer( $domain ) {
@@ -245,15 +247,15 @@ function filter( $content ) {
 	if ( ! $manager->has_domains() ) {
 		return $content;
 	}
-	$url_parts = parse_url( site_url() );
-	$url = $url_parts['host'];
+	$url = explode( '://', get_bloginfo( 'url' ) );
+	array_shift( $url );
 
 	/**
 	 * Modify the domain we're rewriting, should an aliasing plugin be used (for example)
 	 *
 	 * @param string $site_domain
 	 */
-	$url = apply_filters( 'dynamic_cdn_site_domain', $url );
+	$url = apply_filters( 'dynamic_cdn_site_domain', rtrim( implode( '://', $url ), '/' ) );
 	$url = preg_quote( $url, '#' );
 
 	$pattern = "#=(\\\?[\"'])(https?:\\\?/\\\?/{$url})?\\\?/([^/](?:(?!\\1).)+)\.(" . implode( '|', $manager->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#";
@@ -277,14 +279,15 @@ function filter_cb( $matches ) {
 
 	$domain = $manager->cdn_domain( $matches[0], $dyncd_context );
 
-	$url = parse_url( site_url() );
+	$url = explode( '://', get_bloginfo( 'url' ) );
+	array_shift( $url );
 
 	/**
 	 * Modify the domain we're rewriting, should an aliasing plugin be used (for example)
 	 *
 	 * @param string $site_domain
 	 */
-	$url = apply_filters( 'dynamic_cdn_site_domain', $url['host'] );
+	$url = apply_filters( 'dynamic_cdn_site_domain', rtrim( implode( '://', $url ), '/' ) );
 	$url = str_replace( $manager->site_domain, $domain, $url );
 
 	// Make sure to use https if the request is over SSL
