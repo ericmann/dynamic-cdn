@@ -269,7 +269,6 @@ function filter( $content ) {
  */
 function filter_cb( $matches ) {
 	global $context;
-	error_log( $context);
 	$manager = \EAMann\Dynamic_CDN\DomainManager::last();
 
 	$upload_dir = wp_upload_dir();

@@ -30,16 +30,16 @@ class DomainManager_Tests extends TestCase {
 	public function test_adds_domains() {
 		$manager = DomainManager( 'http://test.com' );
 
-		$this->assertTrue( $manager->add( 'http://cdn1.com' ) );
-		$this->assertTrue( $manager->add( 'http://cdn2.com' ) );
-		$this->assertFalse( $manager->add( 'http://cdn1.com' ) );
+		$this->assertTrue( $manager->add( 'http://cdn1.com', 'uploads' ) );
+		$this->assertTrue( $manager->add( 'http://cdn2.com', 'uploads' ) );
+		$this->assertFalse( $manager->add( 'http://cdn1.com', 'uploads' ) );
 	}
 
 	public function test_cdn_domain_selection() {
 		$manager = DomainManager( 'http://test.com' );
-		$manager->add( 'http://cdn1.com' );
-		$manager->add( 'http://cdn2.com' );
-		$manager->add( 'http://cdn3.com' );
+		$manager->add( 'http://cdn1.com', 'uploads' );
+		$manager->add( 'http://cdn2.com', 'uploads' );
+		$manager->add( 'http://cdn3.com', 'uploads' );
 
 		$this->assertEquals( $manager->cdn_domain( 'file1.jpg' ), $manager->cdn_domain( 'file1.jpg' ) );
 		$this->assertNotEquals( $manager->cdn_domain( 'file1.jpg' ), $manager->cdn_domain( 'file2.jpg' ) );
@@ -47,7 +47,7 @@ class DomainManager_Tests extends TestCase {
 
 	public function test_domain_replacement() {
 		$manager = DomainManager( 'http://test.com' );
-		$manager->add( 'http://cdn1.com' );
+		$manager->add( 'http://cdn1.com', 'uploads' );
 
 		$original = 'http://test.com/image.png';
 		$expected = 'http://cdn1.com/image.png';
@@ -62,7 +62,7 @@ class DomainManager_Tests extends TestCase {
 
 	public function test_domain_replacement_ssl() {
 		$manager = DomainManager( 'https://test.com' );
-		$manager->add( 'https://cdn1.com' );
+		$manager->add( 'https://cdn1.com', 'uploads' );
 
 		$original = 'https://test.com/image.png';
 		$expected = 'https://cdn1.com/image.png';
@@ -77,7 +77,7 @@ class DomainManager_Tests extends TestCase {
 
 	public function test_domain_replacement_mixed() {
 		$manager = DomainManager( 'http://test.com' );
-		$manager->add( 'https://cdn1.com' );
+		$manager->add( 'https://cdn1.com', 'uploads' );
 
 		$original = 'http://test.com/image.png';
 		$expected = 'https://cdn1.com/image.png';
@@ -94,7 +94,7 @@ class DomainManager_Tests extends TestCase {
 		$manager = DomainManager( 'http://test.com' );
 		$this->assertFalse( $manager->has_domains() );
 
-		$manager->add( 'https://cdn1.com' );
+		$manager->add( 'https://cdn1.com', 'uploads' );
 		$this->assertTrue( $manager->has_domains() );
 	}
 

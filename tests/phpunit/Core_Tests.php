@@ -43,7 +43,7 @@ class Core_Tests extends Base\TestCase {
 
 	public function test_srcset_replacement() {
 		$manager = Base\DomainManager( 'http://test.com' );
-		$manager->add( 'https://cdn1.com' );
+		$manager->add( 'https://cdn1.com', 'uploads' );
 
 		// Mocks
 		M::wpFunction( 'is_ssl', [ 'return' => false ] );
