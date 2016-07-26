@@ -277,7 +277,7 @@ function filter_cb( $matches ) {
 
 	$domain = $manager->cdn_domain( $matches[0], $dyncd_context );
 
-	$url = explode( '://', get_bloginfo( 'url' ) );
+	$url = pase_url( site_url() );
 	array_shift( $url );
 
 	/**
@@ -285,7 +285,7 @@ function filter_cb( $matches ) {
 	 *
 	 * @param string $site_domain
 	 */
-	$url = apply_filters( 'dynamic_cdn_site_domain', rtrim( implode( '://', $url ), '/' ) );
+	$url = apply_filters( 'dynamic_cdn_site_domain', $url );
 	$url = str_replace( $manager->site_domain, $domain, $url );
 
 	// Make sure to use https if the request is over SSL
