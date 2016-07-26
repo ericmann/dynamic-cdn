@@ -100,8 +100,8 @@ function initialize_manager() {
 			$cdn_domains = $cdn_assets_domains = explode( ',', DYNCDN_DOMAINS );
 			$cdn_domains = $cdn_assets_domains = array_map( 'trim', $cdn_domains );
 		}
-		if( defined( 'DYNCDN_ASSETS_DOMAIN' ) ) {
-			$cdn_assets_domains = explode( ',', DYNCDN_ASSETS_DOMAIN );
+		if( defined( 'DYNCDN_ASSETS_DOMAINS' ) ) {
+			$cdn_assets_domains = explode( ',', DYNCDN_ASSETS_DOMAINS );
 			$cdn_assets_domains = array_map( 'trim', $cdn_assets_domains );
 		}
 
