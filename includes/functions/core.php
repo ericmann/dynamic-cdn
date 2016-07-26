@@ -9,6 +9,8 @@ namespace EAMann\Dynamic_CDN\Core;
 
 use EAMann\Dynamic_CDN\DomainManager;
 
+// @todo if this was a class, we could self contain this variable. It's needed in multiple functions so we need to put it in the namespaced global scope
+$context = 'uploads';
 /**
  * Default setup routine
  *
@@ -47,6 +49,8 @@ function init() {
  * Initialize the CDN domain manager for the current domain.
  */
 function initialize_manager() {
+	global $context;
+
 	$site_domain = parse_url( get_bloginfo( 'url' ), PHP_URL_HOST );
 
 	/**
@@ -198,6 +202,9 @@ function ob( $contents ) {
  * @return mixed
  */
 function filter_uploads_only( $content ) {
+	global $context;
+	$context = 'uploads';
+
 	$manager = \EAMann\Dynamic_CDN\DomainManager::last();
 
 	if ( ! $manager->has_domains() ) {
@@ -226,6 +233,14 @@ function filter_uploads_only( $content ) {
  * @return mixed
  */
 function filter( $content ) {
+	global $context;
+
+	// First modify the uploads
+	$content = filter_uploads_only( $content );
+
+	// Reset the context for static assets
+	$context = 'assets';
+
 	$manager = \EAMann\Dynamic_CDN\DomainManager::last();
 	if ( ! $manager->has_domains() ) {
 		return $content;
@@ -253,14 +268,15 @@ function filter( $content ) {
  * @return string
  */
 function filter_cb( $matches ) {
-	error_log( var_export( $matches ) );
+	global $context;
+	error_log( $context);
 	$manager = \EAMann\Dynamic_CDN\DomainManager::last();
 
 	$upload_dir = wp_upload_dir();
 	$upload_dir = $upload_dir['baseurl'];
 	$path = parse_url( $upload_dir, PHP_URL_PATH );
 
-	$domain = $manager->cdn_domain( $matches[0] );
+	$domain = $manager->cdn_domain( $matches[0], $context );
 
 	$url = explode( '://', get_bloginfo( 'url' ) );
 	array_shift( $url );

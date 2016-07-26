@@ -112,7 +112,7 @@ class DomainManager {
 	public function cdn_domain( $file_path, $context = 'uploads' ) {
 		// First, get a checksum for the file path to give us the index we'll use from the CDN domain array.
 		$index = abs( crc32( $file_path ) ) % count( $this->cdn_domains[$context] );
-error_log( $context );
+
 		/**
 		 * Return the correct CDN path to the file.
 		 *
