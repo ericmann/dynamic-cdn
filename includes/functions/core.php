@@ -293,5 +293,5 @@ function filter_cb( $matches ) {
 	// Append query string, if its available
 	$query_string = isset( $matches[5] ) ? $matches[5] : '';
 
-	return "={$matches[1]}{$scheme}://{$url}/{$matches[3]}.{$matches[4]}{$query_string}{$matches[1]}";
+	return "={$matches[1]}{$scheme}://{$url}/" . ( ( 'uploads' === $dyncd_context ) ? 'wp-content/uploads/' : '' ) . "{$matches[3]}.{$matches[4]}{$query_string}{$matches[1]}";
 }
