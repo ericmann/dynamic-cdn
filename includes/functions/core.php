@@ -277,15 +277,14 @@ function filter_cb( $matches ) {
 
 	$domain = $manager->cdn_domain( $matches[0], $dyncd_context );
 
-	$url = pase_url( site_url() );
-	array_shift( $url );
+	$url = parse_url( site_url() );
 
 	/**
 	 * Modify the domain we're rewriting, should an aliasing plugin be used (for example)
 	 *
 	 * @param string $site_domain
 	 */
-	$url = apply_filters( 'dynamic_cdn_site_domain', $url );
+	$url = apply_filters( 'dynamic_cdn_site_domain', $url['host'] );
 	$url = str_replace( $manager->site_domain, $domain, $url );
 
 	// Make sure to use https if the request is over SSL
