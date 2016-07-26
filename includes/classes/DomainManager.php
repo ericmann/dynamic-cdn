@@ -86,14 +86,18 @@ class DomainManager {
 	 * 
 	 * @return bool
 	 */
-	public function add( $cdn_domain ) {
-		if ( in_array( $cdn_domain, $this->cdn_domains ) ) {
+	public function add( $cdn_domain, $context ) {
+		if( ! isset( $this->cdn_domains[$context] ) ) {
+			$this->cdn_domains[$context] = [];
+		}
+		if ( in_array( $cdn_domain, $this->cdn_domains[$context] ) ) {
 			return false;
 		} else {
-			$this->cdn_domains[] = $cdn_domain;
+
+			$this->cdn_domains[$context][] = $cdn_domain;
 
 			$this->has_domains = true;
-			
+
 			return true;
 		}
 	}
@@ -105,9 +109,9 @@ class DomainManager {
 	 *
 	 * @return string
 	 */
-	public function cdn_domain( $file_path ) {
+	public function cdn_domain( $file_path, $context = 'uploads' ) {
 		// First, get a checksum for the file path to give us the index we'll use from the CDN domain array.
-		$index = abs( crc32( $file_path ) ) % count( $this->cdn_domains );
+		$index = abs( crc32( $file_path ) ) % count( $this->cdn_domains[$context] );
 
 		/**
 		 * Return the correct CDN path to the file.
@@ -115,7 +119,7 @@ class DomainManager {
 		 * @param string $cdn_domain
 		 * @param string $file_path
 		 */
-		return apply_filters( 'dynamic_cdn_domain_for_file', $this->cdn_domains[ $index ], $file_path );
+		return apply_filters( 'dynamic_cdn_domain_for_file', $this->cdn_domains[$context][ $index ], $file_path );
 	}
 
 	/**
@@ -129,7 +133,6 @@ class DomainManager {
 		$domain = $this->cdn_domain( basename( $file_url ) );
 		$url = explode( '://', $this->site_domain );
 		array_shift( $url );
-
 		/**
 		 * Allows plugins to override the HTTPS protocol
 		 * 
@@ -152,7 +155,7 @@ class DomainManager {
 	 * 
 	 * @return bool
 	 */
-	public function has_domains() {
-		return count( $this->cdn_domains ) > 0;
+	public function has_domains( $context = 'uploads' ) {
+		return count( $this->cdn_domains[$context] ) > 0;
 	}
 }

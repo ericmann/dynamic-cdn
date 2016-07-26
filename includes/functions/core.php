@@ -57,7 +57,7 @@ function initialize_manager() {
 	$site_domain = apply_filters( 'dynamic_cdn_site_domain', $site_domain );
 
 	// Instantiate the domain manager
-	$manager = DomainManager( $site_domain );
+	$manager = \EAMann\Dynamic_CDN\DomainManager( $site_domain );
 
 	/**
 	 * Flag whether to filter all media content or just uploads. Set to `true` to only process uploads from the CDN
@@ -90,10 +90,15 @@ function initialize_manager() {
 
 		add_filter( 'wp_calculate_image_srcset', '\EAMann\Dynamic_CDN\Core\srcsets', 10, 5 );
 
-		$cdn_domains = array();
+		$cdn_domains = [];
+		$cdn_assets_domains = [];
 		if ( defined( 'DYNCDN_DOMAINS' ) ) {
-			$cdn_domains = explode( ',', DYNCDN_DOMAINS );
-			$cdn_domains = array_map( 'trim', $cdn_domains );
+			$cdn_domains = $cdn_assets_domains = explode( ',', DYNCDN_DOMAINS );
+			$cdn_domains = $cdn_assets_domains = array_map( 'trim', $cdn_domains );
+		}
+		if( defined( 'DYNCDN_ASSETS_DOMAIN' ) ) {
+			$cdn_assets_domains = explode( ',', DYNCDN_ASSETS_DOMAIN );
+			$cdn_assets_domains = array_map( 'trim', $cdn_assets_domains );
 		}
 
 		/**
@@ -102,9 +107,11 @@ function initialize_manager() {
 		 * @param array $cdn_domains
 		 */
 		$cdn_domains = apply_filters( 'dynamic_cdn_default_domains', $cdn_domains );
+		$cdn_assets_domains = apply_filters( 'dynamic_cdn_assets_default_domains', $cdn_assets_domains );
 
 		// Add all domains to the manager
-		array_map( function( $domain ) use ( $manager ) { $manager->add( $domain ); }, $cdn_domains );
+		array_map( function( $domain ) use ( $manager ) { $manager->add( $domain, 'uploads' ); }, $cdn_domains );
+		array_map( function( $domain ) use ( $manager ) { $manager->add( $domain, 'assets' ); }, $cdn_assets_domains );
 	}
 }
 
@@ -141,7 +148,7 @@ function srcsets( $sources, $size_array, $image_src, $image_meta, $attachment_id
  * @return \Closure
  */
 function srcset_replacer( $domain ) {
-	$manager = DomainManager::last();
+	$manager = \EAMann\Dynamic_CDN\DomainManager::last();
 
 	/**
 	 * Replace the URL for a specific source in a srcset with a CDN'd version
@@ -172,7 +179,7 @@ function template_redirect() {
  * @return mixed|void
  */
 function ob( $contents ) {
-	$manager = DomainManager::last();
+	$manager = \EAMann\Dynamic_CDN\DomainManager::last();
 
 	/**
 	 * Filter the content from the output buffer
@@ -191,7 +198,7 @@ function ob( $contents ) {
  * @return mixed
  */
 function filter_uploads_only( $content ) {
-	$manager = DomainManager::last();
+	$manager = \EAMann\Dynamic_CDN\DomainManager::last();
 
 	if ( ! $manager->has_domains() ) {
 		return $content;
@@ -200,7 +207,7 @@ function filter_uploads_only( $content ) {
 	$upload_dir = wp_upload_dir();
 	$upload_dir = $upload_dir['baseurl'];
 	$url_parts = parse_url( $upload_dir );
-	$domain = $url_parts['host'] . ( $url_parts['port'] ? ':' . $url_parts['port'] : '' );
+	$domain = $url_parts['host'] . ( isset( $url_parts['port'] ) ? ':' . $url_parts['port'] : '' );
 	$domain = preg_quote( $domain, '#' );
 
 	$path = parse_url( $upload_dir, PHP_URL_PATH );
@@ -208,7 +215,7 @@ function filter_uploads_only( $content ) {
 
 	// Targeted replace just on uploads URLs
 	$pattern = "#=([\"'])(https?://{$domain})?$preg_path/((?:(?!\\1]).)+)\.(" . implode( '|', $manager->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#";
-	return preg_replace_callback( $pattern , array( $this, 'filter_cb' ), $content );
+	return preg_replace_callback( $pattern , 'EAMann\Dynamic_CDN\Core\filter_cb', $content );
 }
 
 /**
@@ -219,8 +226,7 @@ function filter_uploads_only( $content ) {
  * @return mixed
  */
 function filter( $content ) {
-	$manager = DomainManager::last();
-
+	$manager = \EAMann\Dynamic_CDN\DomainManager::last();
 	if ( ! $manager->has_domains() ) {
 		return $content;
 	}
@@ -237,7 +243,7 @@ function filter( $content ) {
 	$url = preg_quote( $url, '#' );
 
 	$pattern = "#=(\\\?[\"'])(https?:\\\?/\\\?/{$url})?\\\?/([^/](?:(?!\\1).)+)\.(" . implode( '|', $manager->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#";
-	return preg_replace_callback( $pattern, array( $this, 'filter_cb' ), $content );
+	return preg_replace_callback( $pattern, 'EAMann\Dynamic_CDN\Core\filter_cb', $content );
 }
 
 /**
@@ -247,8 +253,8 @@ function filter( $content ) {
  *
  * @return string
  */
-function filter_cb( $matches ) {
-	$manager = DomainManager::last();
+function filter_cb( $matches, $context = 'uploads' ) {
+	$manager = \EAMann\Dynamic_CDN\DomainManager::last( $context );
 
 	$upload_dir = wp_upload_dir();
 	$upload_dir = $upload_dir['baseurl'];
