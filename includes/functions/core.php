@@ -230,16 +230,15 @@ function filter( $content ) {
 	if ( ! $manager->has_domains() ) {
 		return $content;
 	}
-
-	$url = explode( '://', get_bloginfo( 'url' ) );
-	array_shift( $url );
+	$url_parts = parse_url( site_url() );
+	$url = $url_parts['host'];
 
 	/**
 	 * Modify the domain we're rewriting, should an aliasing plugin be used (for example)
 	 *
 	 * @param string $site_domain
 	 */
-	$url = apply_filters( 'dynamic_cdn_site_domain', rtrim( implode( '://', $url ), '/' ) );
+	$url = apply_filters( 'dynamic_cdn_site_domain', $url );
 	$url = preg_quote( $url, '#' );
 
 	$pattern = "#=(\\\?[\"'])(https?:\\\?/\\\?/{$url})?\\\?/([^/](?:(?!\\1).)+)\.(" . implode( '|', $manager->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#";
@@ -253,8 +252,9 @@ function filter( $content ) {
  *
  * @return string
  */
-function filter_cb( $matches, $context = 'uploads' ) {
-	$manager = \EAMann\Dynamic_CDN\DomainManager::last( $context );
+function filter_cb( $matches ) {
+	error_log( var_export( $matches ) );
+	$manager = \EAMann\Dynamic_CDN\DomainManager::last();
 
 	$upload_dir = wp_upload_dir();
 	$upload_dir = $upload_dir['baseurl'];
