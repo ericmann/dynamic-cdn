@@ -92,10 +92,10 @@ class DomainManager_Tests extends TestCase {
 
 	public function test_has_domains() {
 		$manager = DomainManager( 'http://test.com' );
-		$this->assertFalse( $manager->has_domains() );
+		$this->assertFalse( $manager->has_domains( 'uploads' ) );
 
 		$manager->add( 'https://cdn1.com', 'uploads' );
-		$this->assertTrue( $manager->has_domains() );
+		$this->assertTrue( $manager->has_domains( 'uploads' ) );
 	}
 
 	public function test_default_manager() {

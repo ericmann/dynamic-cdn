@@ -156,7 +156,6 @@ class DomainManager {
 	 * @return bool
 	 */
 	public function has_domains( $context = 'uploads' ) {
-		error_log( 'FOO ' . count( $this->cdn_domains[$context] ) );
-		return count( $this->cdn_domains[$context] ) > 0;
+		return ( isset( $this->cdn_domains[$context] ) && count( $this->cdn_domains[$context] ) > 0 ) ? true : false;
 	}
 }
