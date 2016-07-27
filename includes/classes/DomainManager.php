@@ -157,7 +157,7 @@ class DomainManager {
 		 *
 		 * @param string $site_domain
 		 */
-		$url = apply_filters( 'dynamic_cdn_site_domain', rtrim( implode( '://', $url ), '/' ) );
+		$url = apply_filters( 'dynamic_cdn_site_domain', $url[0] );
 
 		$pattern = "#{$proto_pattern}" . preg_quote($url, '#') . '#';
 
