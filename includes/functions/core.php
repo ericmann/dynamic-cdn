@@ -284,7 +284,6 @@ function filter( $content ) {
 	. "\\1#"; // closing quote
 
 	return preg_replace_callback( $pattern, 'EAMann\Dynamic_CDN\Core\filter_cb', $content );
-
 }
 
 /**
@@ -301,10 +300,10 @@ function filter_cb( $matches ) {
 
 	$upload_dir = wp_upload_dir();
 	$upload_dir = $upload_dir['baseurl'];
-	$path = parse_url( $upload_dir, PHP_URL_PATH );
+	$upload_path = parse_url( $upload_dir, PHP_URL_PATH );
 
-	if( strpos( stripslashes( $matches[3] ), ltrim($path, '/') ) === 0) {
-		// Uf the file is an uploaded file and there is an uploads domain
+	if( strpos( stripslashes( $matches[3] ), ltrim($upload_path, '/') ) === 0) {
+		// If the file is an uploaded file and there is an uploads domain
 		if ( $manager->has_domains( 'uploads' ) ) {
 			$dyncd_context = 'uploads';
 		}

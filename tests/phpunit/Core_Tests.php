@@ -141,4 +141,5 @@ class Core_Tests extends Base\TestCase {
 		';
 		$this->assertEquals( $expected, $filtered_content );
 	}
+
 }
