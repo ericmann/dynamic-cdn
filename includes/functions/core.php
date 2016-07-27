@@ -232,6 +232,7 @@ function filter_uploads_only( $content ) {
 	$path = parse_url( $upload_dir, PHP_URL_PATH );
 	$preg_path = str_replace( '/', '\\\?/', preg_quote( $path, '#' ) );
 
+	// Targeted replace just on uploads URLs
 	$pattern = "#=(\\\?[\"'])"  // open equal sign and opening quote
 	. "(https?:\\\?/\\\?/{$domain})?"// domain (optional)
 	. "$preg_path\\\?/" // uploads path
