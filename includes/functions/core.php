@@ -34,6 +34,18 @@ function setup() {
 	do_action( 'dynamic_cdn_first_loaded' );
 }
 
+/**
+ * Get the site's current domain
+ *
+ * @return string
+ */
+function get_site_domain() {
+	$url_parts = parse_url( get_bloginfo( 'url' ) );
+
+	$site_domain = $url_parts['host'] . ($url_parts['port'] ? ':' . $url_parts['port'] : '');
+	return $site_domain;
+}
+
 
 /**
  * Initializes the plugin and fires an action other plugins can hook into.
@@ -52,9 +64,7 @@ function init() {
 function initialize_manager() {
 	global $dyncd_context;
 
-	$url_parts = parse_url( get_bloginfo( 'url' ) );
-
-	$site_domain = $url_parts['host'] . ($url_parts['port'] ? ':' . $url_parts['port'] : '');
+	$site_domain = get_site_domain();
 
 	/**
 	 * Update the stored site domain, should an aliasing plugin be used (for example)
@@ -141,7 +151,7 @@ function srcsets( $sources, $size_array, $image_src, $image_meta, $attachment_id
 	}
 
 	// Iteratively update each srcset
-	$replacer = srcset_replacer();
+	$replacer = srcset_replacer( get_site_domain() );
 	array_walk( $sources, $replacer );
 
 	return $sources;
@@ -150,10 +160,11 @@ function srcsets( $sources, $size_array, $image_src, $image_meta, $attachment_id
 /**
  * Create a domain-specific srcset replacement function for use in array iterations
  *
+ * @param string $domain
  * @return \Closure
  */
-function srcset_replacer( ) {
-	$manager = \EAMann\Dynamic_CDN\DomainManager::last();
+function srcset_replacer( $domain ) {
+	$manager = \EAMann\Dynamic_CDN\DomainManager($domain);
 
 	/**
 	 * Replace the URL for a specific source in a srcset with a CDN'd version
