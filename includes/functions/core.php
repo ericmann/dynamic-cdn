@@ -43,6 +43,14 @@ function get_site_domain() {
 	$url_parts = parse_url( get_bloginfo( 'url' ) );
 
 	$site_domain = $url_parts['host'] . ($url_parts['port'] ? ':' . $url_parts['port'] : '');
+
+	/**
+	 * Update the stored site domain, should an aliasing plugin be used (for example)
+	 *
+	 * @param string $site_domain
+	 */
+	$site_domain = apply_filters( 'dynamic_cdn_site_domain', $site_domain );
+
 	return $site_domain;
 }
 
@@ -65,13 +73,6 @@ function initialize_manager() {
 	global $dyncd_context;
 
 	$site_domain = get_site_domain();
-
-	/**
-	 * Update the stored site domain, should an aliasing plugin be used (for example)
-	 *
-	 * @param string $site_domain
-	 */
-	$site_domain = apply_filters( 'dynamic_cdn_site_domain', $site_domain );
 
 	// Instantiate the domain manager
 	$manager = \EAMann\Dynamic_CDN\DomainManager( $site_domain );
