@@ -11,6 +11,7 @@ use EAMann\Dynamic_CDN\DomainManager;
 
 // @todo if this was a class, we could self contain this variable. It's needed in multiple functions so we need to put it in the namespaced global scope
 $dyncd_context = 'uploads';
+
 /**
  * Default setup routine
  *
@@ -220,11 +221,18 @@ function filter_uploads_only( $content ) {
 	$domain = preg_quote( $domain, '#' );
 
 	$path = parse_url( $upload_dir, PHP_URL_PATH );
-	$preg_path = preg_quote( $path, '#' );
+	$preg_path = str_replace( '/', '\\\?/', preg_quote( $path, '#' ) );
 
-	// Targeted replace just on uploads URLs
-	$pattern = "#=([\"'])(https?://{$domain})?$preg_path/((?:(?!\\1]).)+)\.(" . implode( '|', $manager->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#";
-	return preg_replace_callback( $pattern , 'EAMann\Dynamic_CDN\Core\filter_cb', $content );
+	$pattern = "#=(\\\?[\"'])"  // open equal sign and opening quote
+	. "(https?:\\\?/\\\?/{$domain})?"// domain (optional)
+	. "$preg_path\\\?/" // uploads path
+	// . "((?:(?!\\1]).)+)" // look for anything that's not our opening quote
+	. "([\w\s\\\/\-\,]+)" // look for anything that's not our opening quote
+	. "\.(" . implode( '|', $manager->extensions ) . ")" // extensions
+	. "(\?((?:(?!\\1).)+))?" // match query strings
+	. "\\1#"; // closing quote
+
+	return preg_replace_callback( $pattern, 'EAMann\Dynamic_CDN\Core\filter_cb', $content );
 }
 
 /**
@@ -258,7 +266,14 @@ function filter( $content ) {
 	$url = apply_filters( 'dynamic_cdn_site_domain', rtrim( implode( '://', $url ), '/' ) );
 	$url = preg_quote( $url, '#' );
 
-	$pattern = "#=(\\\?[\"'])(https?:\\\?/\\\?/{$url})?\\\?/([^/](?:(?!\\1).)+)\.(" . implode( '|', $manager->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#";
+	$pattern = "#=(\\\?[\"'])" // open equal sign and opening quote
+	. "(https?:\\\?/\\\?/{$url})?\\\?/"  // domain (optional)
+	// . "([^/](?:(?!\\1).)+)" // look for anything that's not our opening quote
+	. "([\w\s\\\/\-\,]+)" // look for anything that's not our opening quote
+	. "\.(" . implode( '|', $manager->extensions ) . ")" // extensions
+	. "(\?((?:(?!\\1).)+))?" // match query strings
+	. "\\1#"; // closing quote
+
 	return preg_replace_callback( $pattern, 'EAMann\Dynamic_CDN\Core\filter_cb', $content );
 }
 
@@ -271,6 +286,7 @@ function filter( $content ) {
  */
 function filter_cb( $matches ) {
 	global $dyncd_context;
+
 	$manager = \EAMann\Dynamic_CDN\DomainManager::last();
 
 	$upload_dir = wp_upload_dir();
@@ -296,5 +312,20 @@ function filter_cb( $matches ) {
 	// Append query string, if its available
 	$query_string = isset( $matches[5] ) ? $matches[5] : '';
 
-	return "={$matches[1]}{$scheme}://{$url}" . ( ( 'uploads' === $dyncd_context ) ? parse_url( $upload_dir, PHP_URL_PATH ) : '' ) . "/{$matches[3]}.{$matches[4]}{$query_string}{$matches[1]}";
+	// If backslashes were escaped, then they need to continue being escaped
+	if( strpos( $matches[3], '\\/' ) !== false ) {
+		$add_slashes = true;
+	} else {
+		$add_slashes = false;
+	}
+
+	$root_path = ( ( 'uploads' === $dyncd_context ) ? parse_url( $upload_dir, PHP_URL_PATH ) : '' );
+
+	$root = "//{$url}" . $root_path . "/";
+
+	$result = "={$matches[1]}{$scheme}:"
+						. ( $add_slashes ? addcslashes($root, '/') : $root )
+						. "{$matches[3]}.{$matches[4]}{$query_string}{$matches[1]}";
+
+	return $result;
 }
