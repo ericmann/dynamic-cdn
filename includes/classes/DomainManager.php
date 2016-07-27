@@ -137,6 +137,7 @@ class DomainManager {
 
 		if ( count( $url ) > 1 ) array_shift($url);
 
+		// If the CDN domain has an existing protocol, use that by default
 		preg_match("#{$proto_pattern}#", $domain, $matches);
 
 		/**
