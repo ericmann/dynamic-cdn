@@ -76,7 +76,7 @@ class DomainManager_Tests extends TestCase {
 	}
 
 	public function test_domain_replacement_mixed() {
-		$manager = DomainManager( 'test.com' );
+		$manager = DomainManager( 'http://test.com' );
 		$manager->add( 'https://cdn1.com', 'uploads' );
 
 		$original = 'http://test.com/image.png';
