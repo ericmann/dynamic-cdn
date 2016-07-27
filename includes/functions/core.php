@@ -267,7 +267,7 @@ function filter( $content ) {
 	$pattern = "#=(\\\?[\"'])" // open equal sign and opening quote
 	. "(https?:\\\?/\\\?/{$url})?\\\?/"  // domain (optional)
 	// . "([^/](?:(?!\\1).)+)" // look for anything that's not our opening quote
-	. "([\w\s\\\/\-\,]+)" // look for anything that's not our opening quote
+	. "([^/][\w\s\\\/\-\,]+)" // look for anything that's not our opening quote
 	. "\.(" . implode( '|', $manager->extensions ) . ")" // extensions
 	. "(\?((?:(?!\\1).)+))?" // match query strings
 	. "\\1#"; // closing quote
