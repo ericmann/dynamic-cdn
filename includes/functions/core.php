@@ -255,10 +255,7 @@ function filter_uploads_only( $content ) {
  */
 function filter( $content ) {
 	global $dyncd_context;
-
-	// First modify the uploads
-	$content = filter_uploads_only( $content );
-
+	
 	// Reset the context for static assets
 	$dyncd_context = 'assets';
 
