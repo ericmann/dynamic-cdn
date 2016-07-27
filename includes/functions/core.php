@@ -220,7 +220,7 @@ function filter_uploads_only( $content ) {
 
 	$manager = \EAMann\Dynamic_CDN\DomainManager::last();
 
-	if ( ! $manager->has_domains() ) {
+	if ( ! $manager->has_domains( $dyncd_context ) ) {
 		return $content;
 	}
 
@@ -230,17 +230,17 @@ function filter_uploads_only( $content ) {
 	$domain = $url_parts['host'] . ( isset( $url_parts['port'] ) ? ':' . $url_parts['port'] : '' );
 	$domain = preg_quote( $domain, '#' );
 
-	$path = parse_url( $upload_dir, PHP_URL_PATH );
+	$path = ltrim( parse_url( $upload_dir, PHP_URL_PATH ), '/' );
 	$preg_path = str_replace( '/', '\\\?/', preg_quote( $path, '#' ) );
 
 	// Targeted replace just on uploads URLs
 	$pattern = "#=(\\\?[\"'])"  // open equal sign and opening quote
 	. "(https?:\\\?/\\\?/{$domain})?"// domain (optional)
-	. "$preg_path\\\?/" // uploads path
+	. "\\\?/($preg_path\\\?/" // uploads path
 	// . "((?:(?!\\1]).)+)" // look for anything that's not our opening quote
-	. "([\w\s\\\/\-\,]+)" // look for anything that's not our opening quote
+	. "[\w\s\\\/\-\,\.]+)" // look for anything that's not our opening quote
 	. "\.(" . implode( '|', $manager->extensions ) . ")" // extensions
-	. "(\?((?:(?!\\1).)+))?" // match query strings
+	. "(\?((?:(?!\\1).)*))?" // match query strings
 	. "\\1#"; // closing quote
 
 	return preg_replace_callback( $pattern, 'EAMann\Dynamic_CDN\Core\filter_cb', $content );
@@ -260,7 +260,8 @@ function filter( $content ) {
 	$dyncd_context = 'assets';
 
 	$manager = \EAMann\Dynamic_CDN\DomainManager::last();
-	if ( ! $manager->has_domains() ) {
+
+	if ( ! $manager->has_domains( $dyncd_context ) ) {
 		return $content;
 	}
 	$url = explode( '://', get_bloginfo( 'url' ) );
@@ -277,12 +278,13 @@ function filter( $content ) {
 	$pattern = "#=(\\\?[\"'])" // open equal sign and opening quote
 	. "(https?:\\\?/\\\?/{$url})?\\\?/"  // domain (optional)
 	// . "([^/](?:(?!\\1).)+)" // look for anything that's not our opening quote
-	. "([^/][\w\s\\\/\-\,]+)" // look for anything that's not our opening quote
+	. "([^/][\w\s\\\/\-\,\.]+)" // look for anything that's not our opening quote
 	. "\.(" . implode( '|', $manager->extensions ) . ")" // extensions
-	. "(\?((?:(?!\\1).)+))?" // match query strings
+	. "(\?((?:(?!\\1).)*))?" // match query strings
 	. "\\1#"; // closing quote
 
 	return preg_replace_callback( $pattern, 'EAMann\Dynamic_CDN\Core\filter_cb', $content );
+
 }
 
 /**
@@ -302,7 +304,10 @@ function filter_cb( $matches ) {
 	$path = parse_url( $upload_dir, PHP_URL_PATH );
 
 	if( strpos( stripslashes( $matches[3] ), ltrim($path, '/') ) === 0) {
-		$dyncd_context = 'uploads';
+		// Uf the file is an uploaded file and there is an uploads domain
+		if ( $manager->has_domains( 'uploads' ) ) {
+			$dyncd_context = 'uploads';
+		}
 	}
 
 	$domain = $manager->cdn_domain( $matches[0], $dyncd_context );
@@ -325,18 +330,14 @@ function filter_cb( $matches ) {
 	$query_string = isset( $matches[5] ) ? $matches[5] : '';
 
 	// If backslashes were escaped, then they need to continue being escaped
-	if( strpos( $matches[3], '\\/' ) !== false ) {
+	if( strpos( $matches[0], '\\/' ) !== false ) {
 		$add_slashes = true;
 	} else {
 		$add_slashes = false;
 	}
 
-	$root_path = ( ( 'uploads' === $dyncd_context ) ? parse_url( $upload_dir, PHP_URL_PATH ) : '' );
-
-	$root = "//{$url}" . $root_path . "/";
-
 	$result = "={$matches[1]}{$scheme}:"
-						. ( $add_slashes ? addcslashes($root, '/') : $root )
+						. ( $add_slashes ? addcslashes("//{$url}/", '/') : "//{$url}/" )
 						. "{$matches[3]}.{$matches[4]}{$query_string}{$matches[1]}";
 
 	return $result;
