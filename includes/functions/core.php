@@ -255,7 +255,7 @@ function filter_uploads_only( $content ) {
  */
 function filter( $content ) {
 	global $dyncd_context;
-	
+
 	// Reset the context for static assets
 	$dyncd_context = 'assets';
 
@@ -300,6 +300,10 @@ function filter_cb( $matches ) {
 	$upload_dir = wp_upload_dir();
 	$upload_dir = $upload_dir['baseurl'];
 	$path = parse_url( $upload_dir, PHP_URL_PATH );
+
+	if( strpos( stripslashes( $matches[3] ), ltrim($path, '/') ) === 0) {
+		$dyncd_context = 'uploads';
+	}
 
 	$domain = $manager->cdn_domain( $matches[0], $dyncd_context );
 
