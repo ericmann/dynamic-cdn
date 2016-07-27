@@ -21,7 +21,7 @@ function setup() {
 	$n = function( $function ) {
 		return __NAMESPACE__ . "\\$function";
 	};
-	
+
 	add_action( 'init',             $n( 'init' ) );
 	add_action( 'dynamic_cdn_init', $n( 'initialize_manager' ) );
 
@@ -129,9 +129,9 @@ function srcsets( $sources, $size_array, $image_src, $image_meta, $attachment_id
 
 /**
  * Create a domain-specific srcset replacement function for use in array iterations
- * 
+ *
  * @param string $domain
- * 
+ *
  * @return \Closure
  */
 function srcset_replacer( $domain ) {
@@ -195,11 +195,20 @@ function filter_uploads_only( $content ) {
 	$upload_dir = $upload_dir['baseurl'];
 	$domain = preg_quote( parse_url( $upload_dir, PHP_URL_HOST ), '#' );
 
-	$path = parse_url( $upload_dir, PHP_URL_PATH );
-	$preg_path = preg_quote( $path, '#' );
+	$path = ltrim( parse_url( $upload_dir, PHP_URL_PATH ), '/');
+	$preg_path = str_replace( '/', '\\\?/', preg_quote( $path, '#' ) );
 
 	// Targeted replace just on uploads URLs
-	return preg_replace_callback( "#=([\"'])(https?://{$domain})?$preg_path/((?:(?!\\1]).)+)\.(" . implode( '|', $manager->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", '\EAMann\Dynamic_CDN\Core\filter_cb', $content );
+	$pattern = "#=(\\\?[\"'])"  // open equal sign and opening quote
+	. "(https?:\\\?/\\\?/{$domain})?"// domain (optional)
+	. "\\\?/($preg_path\\\?/" // uploads path
+	// . "((?:(?!\\1]).)+)" // look for anything that's not our opening quote
+	. "[\w\s\\\/\-\,\.]+)" // look for anything that's not our opening quote
+	. "\.(" . implode( '|', $manager->extensions ) . ")" // extensions
+	. "(\?((?:(?!\\1).)*))?" // match query strings
+	. "\\1#"; // closing quote
+
+	return preg_replace_callback( $pattern, 'EAMann\Dynamic_CDN\Core\filter_cb', $content );
 }
 
 /**
@@ -227,7 +236,15 @@ function filter( $content ) {
 	$url = apply_filters( 'dynamic_cdn_site_domain', rtrim( implode( '://', $url ), '/' ) );
 	$url = preg_quote( $url, '#' );
 
-	return preg_replace_callback( "#=([\"'])(https?://{$url})?/([^/](?:(?!\\1).)+)\.(" . implode( '|', $manager->extensions ) . ")(\?((?:(?!\\1).)+))?\\1#", '\EAMann\Dynamic_CDN\Core\filter_cb', $content );
+	$pattern = "#=(\\\?[\"'])" // open equal sign and opening quote
+	. "(https?:\\\?/\\\?/{$url})?\\\?/"  // domain (optional)
+	// . "([^/](?:(?!\\1).)+)" // look for anything that's not our opening quote
+	. "([^/][\w\s\\\/\-\,\.]+)" // look for anything that's not our opening quote
+	. "\.(" . implode( '|', $manager->extensions ) . ")" // extensions
+	. "(\?((?:(?!\\1).)*))?" // match query strings
+	. "\\1#"; // closing quote
+
+	return preg_replace_callback( $pattern, 'EAMann\Dynamic_CDN\Core\filter_cb', $content );
 }
 
 /**
@@ -242,7 +259,7 @@ function filter_cb( $matches ) {
 
 	$upload_dir = wp_upload_dir();
 	$upload_dir = $upload_dir['baseurl'];
-	$path = parse_url( $upload_dir, PHP_URL_PATH );
+	$upload_path = parse_url( $upload_dir, PHP_URL_PATH );
 
 	$domain = $manager->cdn_domain( $matches[0] );
 
@@ -263,5 +280,16 @@ function filter_cb( $matches ) {
 	// Append query string, if its available
 	$query_string = isset( $matches[5] ) ? $matches[5] : '';
 
-	return "={$matches[1]}{$scheme}://{$url}/{$matches[3]}.{$matches[4]}{$query_string}{$matches[1]}";
+	// If backslashes were escaped, then they need to continue being escaped
+	if( strpos( $matches[0], '\\/' ) !== false ) {
+		$add_slashes = true;
+	} else {
+		$add_slashes = false;
+	}
+
+	$result = "={$matches[1]}{$scheme}:"
+						. ( $add_slashes ? addcslashes("//{$url}/", '/') : "//{$url}/" )
+						. "{$matches[3]}.{$matches[4]}{$query_string}{$matches[1]}";
+
+	return $result;
 }

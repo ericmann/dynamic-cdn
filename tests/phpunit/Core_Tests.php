@@ -10,7 +10,7 @@ class Core_Tests extends Base\TestCase {
 		'classes/DomainManager.php',
 		'functions/core.php'
 	];
-	
+
 	/**
 	 * Test load method.
 	 */
@@ -33,10 +33,10 @@ class Core_Tests extends Base\TestCase {
 	public function test_init() {
 		// Setup
 		M::expectAction( 'dynamic_cdn_init' );
-		
+
 		// Act
 		init();
-		
+
 		// Verify
 		$this->assertConditionsMet();
 	}
@@ -57,4 +57,91 @@ class Core_Tests extends Base\TestCase {
 
 		$this->assertEquals( 'https://cdn1.com/image.jpg', $replacer( $source )['url'] );
 	}
+
+	public function test_query_string() {
+		M::wpFunction( 'is_ssl', [ 'return' => true ] );
+
+		\WP_Mock::wpFunction( 'get_bloginfo', array(
+			'args' => 'url',
+			'return' => 'http://localhost'
+		) );
+		\WP_Mock::wpFunction( 'wp_upload_dir', array(
+			'return' => array(
+				'baseurl' => 'http://localhost/wp-content/uploads'
+			)
+		) );
+		$manager = Base\DomainManager( 'localhost' );
+		$manager->extensions = array( 'jpg' );
+		$manager->add( 'cdn1.com' );
+		$site_url = 'http://localhost';
+		$content = '
+			<img src="/puppy.jpg" />
+			<img src="/puppy.jpg?" />
+			<img src="/puppy.jpg?a=b" />
+		';
+		$filtered_content = filter( $content );
+		$expected = '
+			<img src="https://cdn1.com/puppy.jpg" />
+			<img src="https://cdn1.com/puppy.jpg?" />
+			<img src="https://cdn1.com/puppy.jpg?a=b" />
+		';
+
+		$this->assertEquals( $expected, $filtered_content );
+
+	}
+
+	public function test_escaped_content() {
+		M::wpFunction( 'is_ssl', [ 'return' => true ] );
+		\WP_Mock::wpFunction( 'get_bloginfo', array(
+			'args' => 'url',
+			'return' => 'http://localhost'
+		) );
+		\WP_Mock::wpFunction( 'wp_upload_dir', array(
+			'return' => array(
+				'baseurl' => 'http://localhost/wp-content/uploads'
+			)
+		) );
+		$manager = Base\DomainManager( 'localhost' );
+		$manager->extensions = array( 'jpg' );
+		$manager->add( 'cdn1.com' );
+		$site_url = 'http://localhost';
+		$content = '
+			<img src=\"\/wp-content\/uploads\/2016\/06\/puppy-2.jpg\" \/>
+			<img src=\"\/puppy-2.jpg\" \/>
+		';
+		$filtered_content = filter( $content );
+		$expected = '
+			<img src=\"https:\/\/cdn1.com\/wp-content\/uploads\/2016\/06\/puppy-2.jpg\" \/>
+			<img src=\"https:\/\/cdn1.com\/puppy-2.jpg\" \/>
+		';
+		$this->assertEquals( $expected, $filtered_content );
+	}
+
+	public function test_escaped_content_uploads_only() {
+		M::wpFunction( 'is_ssl', [ 'return' => true ] );
+		\WP_Mock::wpFunction( 'get_bloginfo', array(
+			'args' => 'url',
+			'return' => 'http://localhost'
+		) );
+		\WP_Mock::wpFunction( 'wp_upload_dir', array(
+			'return' => array(
+				'baseurl' => 'http://localhost/wp-content/uploads'
+			)
+		) );
+		$manager = Base\DomainManager( 'localhost' );
+		$manager->extensions = array( 'jpg' );
+		$manager->add( 'cdn1.com' );
+		$site_url = 'http://localhost';
+		$content = '
+			<img src=\"\/wp-content\/uploads\/2016\/06\/puppy-2.jpg\" \/>
+			<img src=\"\/puppy-2.jpg\" \/>
+		';
+		$filtered_content = filter_uploads_only( $content );
+		$expected = '
+			<img src=\"https:\/\/cdn1.com\/wp-content\/uploads\/2016\/06\/puppy-2.jpg\" \/>
+			<img src=\"\/puppy-2.jpg\" \/>
+		';
+		$this->assertEquals( $expected, $filtered_content );
+	}
+
 }
