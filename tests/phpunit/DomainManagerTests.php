@@ -83,7 +83,7 @@ class DomainManager_Tests extends TestCase {
 		$expected = 'https://cdn1.com/image.png';
 
 		// Mocks
-		M::wpFunction( 'is_ssl', [ 'return' => true ] );
+		M::wpFunction( 'is_ssl', [ 'return' => false ] );
 		M::wpPassthruFunction( 'esc_url' );
 
 		// Verify

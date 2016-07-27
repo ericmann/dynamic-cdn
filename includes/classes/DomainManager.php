@@ -137,12 +137,17 @@ class DomainManager {
 
 		if ( count( $url ) > 1 ) array_shift($url);
 
+		preg_match("#{$proto_pattern}#", $domain, $matches);
+
 		/**
 		 * Allows plugins to override the HTTPS protocol
 		 *
 		 * @param string $scheme
 		 */
-		$scheme = apply_filters( 'dynamic_cdn_protocol', ( is_ssl() ? 'https' : 'http' ) );
+		$scheme = apply_filters(
+			'dynamic_cdn_protocol',
+			( count($matches) >= 2 ? $matches[2] : ( is_ssl() ? 'https' : 'http' ) )
+		);
 
 		$domain = esc_url( $scheme . '://' . preg_replace( "#{$proto_pattern}#" , '', $domain ) );
 
