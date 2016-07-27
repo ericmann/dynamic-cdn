@@ -141,7 +141,7 @@ function srcsets( $sources, $size_array, $image_src, $image_meta, $attachment_id
 	}
 
 	// Iteratively update each srcset
-	$replacer = srcset_replacer( get_bloginfo( 'url' ) );
+	$replacer = srcset_replacer();
 	array_walk( $sources, $replacer );
 
 	return $sources;
@@ -150,12 +150,10 @@ function srcsets( $sources, $size_array, $image_src, $image_meta, $attachment_id
 /**
  * Create a domain-specific srcset replacement function for use in array iterations
  *
- * @param string $domain
- *
  * @return \Closure
  */
-function srcset_replacer( $domain ) {
-	$manager = \EAMann\Dynamic_CDN\DomainManager($domain);
+function srcset_replacer( ) {
+	$manager = \EAMann\Dynamic_CDN\DomainManager::last();
 
 	/**
 	 * Replace the URL for a specific source in a srcset with a CDN'd version

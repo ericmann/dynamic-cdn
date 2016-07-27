@@ -146,7 +146,6 @@ class DomainManager {
 
 		$domain = esc_url( $scheme . '://' . preg_replace( "#{$proto_pattern}#" , '', $domain ) );
 
-
 		/**
 		 * Modify the domain we're rewriting, should an aliasing plugin be used (for example)
 		 *
@@ -156,9 +155,7 @@ class DomainManager {
 
 		$pattern = "#{$proto_pattern}" . preg_quote($url, '#') . '#';
 
-		$replaced = preg_replace( $pattern, $domain, $file_url );
-
-		return $replaced;
+		return preg_replace( $pattern, $domain, $file_url );
 	}
 
 	/**
