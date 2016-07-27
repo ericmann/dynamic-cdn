@@ -76,14 +76,14 @@ class DomainManager_Tests extends TestCase {
 	}
 
 	public function test_domain_replacement_mixed() {
-		$manager = DomainManager( 'http://test.com' );
+		$manager = DomainManager( 'test.com' );
 		$manager->add( 'https://cdn1.com', 'uploads' );
 
 		$original = 'http://test.com/image.png';
 		$expected = 'https://cdn1.com/image.png';
 
 		// Mocks
-		M::wpFunction( 'is_ssl', [ 'return' => false ] );
+		M::wpFunction( 'is_ssl', [ 'return' => true ] );
 		M::wpPassthruFunction( 'esc_url' );
 
 		// Verify

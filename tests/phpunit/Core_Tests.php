@@ -10,7 +10,7 @@ class Core_Tests extends Base\TestCase {
 		'classes/DomainManager.php',
 		'functions/core.php'
 	];
-	
+
 	/**
 	 * Test load method.
 	 */
@@ -33,10 +33,10 @@ class Core_Tests extends Base\TestCase {
 	public function test_init() {
 		// Setup
 		M::expectAction( 'dynamic_cdn_init' );
-		
+
 		// Act
 		init();
-		
+
 		// Verify
 		$this->assertConditionsMet();
 	}
@@ -55,6 +55,6 @@ class Core_Tests extends Base\TestCase {
 
 		$replacer = srcset_replacer( 'http://test.com' );
 
-		$this->assertEquals( 'https://cdn1.com/image.jpg', $replacer( $source )['url'] );
+		$this->assertEquals( 'http://cdn1.com/image.jpg', $replacer( $source )['url'] );
 	}
 }

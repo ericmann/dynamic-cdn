@@ -133,7 +133,9 @@ class DomainManager {
 		$domain = $this->cdn_domain( basename( $file_url ) );
 		$url = explode( '://', $this->site_domain );
 
-		if ( $url[0] == '://' ) array_shift($url);
+		$proto_pattern = '^((https?):)?\/\/';
+
+		if ( count( $url ) > 1 ) array_shift($url);
 
 		/**
 		 * Allows plugins to override the HTTPS protocol
@@ -142,6 +144,9 @@ class DomainManager {
 		 */
 		$scheme = apply_filters( 'dynamic_cdn_protocol', ( is_ssl() ? 'https' : 'http' ) );
 
+		$domain = esc_url( $scheme . '://' . preg_replace( "#{$proto_pattern}#" , '', $domain ) );
+
+
 		/**
 		 * Modify the domain we're rewriting, should an aliasing plugin be used (for example)
 		 *
@@ -149,7 +154,11 @@ class DomainManager {
 		 */
 		$url = apply_filters( 'dynamic_cdn_site_domain', rtrim( implode( '://', $url ), '/' ) );
 
-		return set_url_scheme( esc_url( str_replace( $url, $domain, $file_url ) ), $scheme);
+		$pattern = "#{$proto_pattern}" . preg_quote($url, '#') . '#';
+
+		$replaced = preg_replace( $pattern, $domain, $file_url );
+
+		return $replaced;
 	}
 
 	/**

@@ -155,7 +155,7 @@ function srcsets( $sources, $size_array, $image_src, $image_meta, $attachment_id
  * @return \Closure
  */
 function srcset_replacer( $domain ) {
-	$manager = \EAMann\Dynamic_CDN\DomainManager::last();
+	$manager = \EAMann\Dynamic_CDN\DomainManager($domain);
 
 	/**
 	 * Replace the URL for a specific source in a srcset with a CDN'd version
