@@ -302,6 +302,8 @@ function filter_cb( $matches ) {
 	$upload_dir = $upload_dir['baseurl'];
 	$upload_path = parse_url( $upload_dir, PHP_URL_PATH );
 
+	$original_dyncd_context = $dyncd_context;
+
 	if( strpos( stripslashes( $matches[3] ), ltrim($upload_path, '/') ) === 0) {
 		// If the file is an uploaded file and there is an uploads domain
 		if ( $manager->has_domains( 'uploads' ) ) {
@@ -338,6 +340,8 @@ function filter_cb( $matches ) {
 	$result = "={$matches[1]}{$scheme}:"
 						. ( $add_slashes ? addcslashes("//{$url}/", '/') : "//{$url}/" )
 						. "{$matches[3]}.{$matches[4]}{$query_string}{$matches[1]}";
+
+	$dyncd_context = $original_dyncd_context;
 
 	return $result;
 }
