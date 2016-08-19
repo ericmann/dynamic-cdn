@@ -31,6 +31,26 @@ function setup() {
 	do_action( 'dynamic_cdn_first_loaded' );
 }
 
+/**
+ * Get the site's current domain
+ *
+ * @return string
+ */
+function get_site_domain() {
+	$url_parts = parse_url( get_bloginfo( 'url' ) );
+
+	$site_domain = $url_parts['host'] . ( isset( $url_parts['port'] ) ? ':' . $url_parts['port'] : '' );
+
+	/**
+	 * Update the stored site domain, should an aliasing plugin be used (for example)
+	 *
+	 * @param string $site_domain
+	 */
+	$site_domain = apply_filters( 'dynamic_cdn_site_domain', $site_domain );
+
+	return $site_domain;
+}
+
 
 /**
  * Initializes the plugin and fires an action other plugins can hook into.
@@ -47,14 +67,7 @@ function init() {
  * Initialize the CDN domain manager for the current domain.
  */
 function initialize_manager() {
-	$site_domain = parse_url( get_bloginfo( 'url' ), PHP_URL_HOST );
-
-	/**
-	 * Update the stored site domain, should an aliasing plugin be used (for example)
-	 *
-	 * @param string $site_domain
-	 */
-	$site_domain = apply_filters( 'dynamic_cdn_site_domain', $site_domain );
+	$site_domain = get_site_domain();
 
 	// Instantiate the domain manager
 	$manager = DomainManager( $site_domain );
@@ -121,7 +134,7 @@ function srcsets( $sources, $size_array, $image_src, $image_meta, $attachment_id
 	}
 
 	// Iteratively update each srcset
-	$replacer = srcset_replacer( get_bloginfo( 'url' ) );
+	$replacer = srcset_replacer( get_site_domain() );
 	array_walk( $sources, $replacer );
 
 	return $sources;
@@ -131,11 +144,10 @@ function srcsets( $sources, $size_array, $image_src, $image_meta, $attachment_id
  * Create a domain-specific srcset replacement function for use in array iterations
  *
  * @param string $domain
- *
  * @return \Closure
  */
 function srcset_replacer( $domain ) {
-	$manager = DomainManager::last();
+	$manager = \EAMann\Dynamic_CDN\DomainManager( $domain );
 
 	/**
 	 * Replace the URL for a specific source in a srcset with a CDN'd version
@@ -193,9 +205,11 @@ function filter_uploads_only( $content ) {
 
 	$upload_dir = wp_upload_dir();
 	$upload_dir = $upload_dir['baseurl'];
-	$domain = preg_quote( parse_url( $upload_dir, PHP_URL_HOST ), '#' );
+	$url_parts = parse_url( $upload_dir );
+	$domain = $url_parts['host'] . ( isset( $url_parts['port'] ) ? ':' . $url_parts['port'] : '' );
+	$domain = preg_quote( $domain, '#' );
 
-	$path = ltrim( parse_url( $upload_dir, PHP_URL_PATH ), '/');
+	$path = ltrim( parse_url( $upload_dir, PHP_URL_PATH ), '/' );
 	$preg_path = str_replace( '/', '\\\?/', preg_quote( $path, '#' ) );
 
 	// Targeted replace just on uploads URLs
@@ -224,7 +238,6 @@ function filter( $content ) {
 	if ( ! $manager->has_domains() ) {
 		return $content;
 	}
-
 	$url = explode( '://', get_bloginfo( 'url' ) );
 	array_shift( $url );
 
@@ -275,7 +288,7 @@ function filter_cb( $matches ) {
 	$url = str_replace( $manager->site_domain, $domain, $url );
 
 	// Make sure to use https if the request is over SSL
-	$scheme = is_ssl() ? 'https' : 'http';
+	$scheme = apply_filters( 'dynamic_cdn_protocol', ( is_ssl() ? 'https' : 'http' ) );
 
 	// Append query string, if its available
 	$query_string = isset( $matches[5] ) ? $matches[5] : '';

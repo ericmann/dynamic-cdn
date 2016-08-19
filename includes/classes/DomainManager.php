@@ -3,14 +3,14 @@ namespace EAMann\Dynamic_CDN;
 
 /**
  * Companion method for DomainManager object.
- * 
+ *
  * @param string $domain
- * 
+ *
  * @return DomainManager
  */
 function DomainManager( $domain ) {
 	static $managers = array();
-	
+
 	if ( ! isset( $managers[ $domain ] ) ) {
 		$managers[ $domain ] = new DomainManager( $domain );
 	}
@@ -51,7 +51,7 @@ class DomainManager {
 
 	/**
 	 * Get the default domain manager for the current site.
-	 * 
+	 *
 	 * @return DomainManager
 	 */
 	public static function current() {
@@ -72,7 +72,7 @@ class DomainManager {
 	public static function last() {
 		return self::$last;
 	}
-	
+
 	public function __construct( $domain ) {
 		$this->site_domain = $domain;
 
@@ -83,7 +83,7 @@ class DomainManager {
 	 * Add a CDN domain to the collection.
 	 *
 	 * @param string $cdn_domain
-	 * 
+	 *
 	 * @return bool
 	 */
 	public function add( $cdn_domain ) {
@@ -91,9 +91,8 @@ class DomainManager {
 			return false;
 		} else {
 			$this->cdn_domains[] = $cdn_domain;
-
 			$this->has_domains = true;
-			
+
 			return true;
 		}
 	}
@@ -120,36 +119,49 @@ class DomainManager {
 
 	/**
 	 * Potentially replace a given file URL with a CDN-ified version
-	 * 
+	 *
 	 * @param string $file_url
-	 * 
+	 *
 	 * @return string
 	 */
 	public function new_url( $file_url ) {
 		$domain = $this->cdn_domain( basename( $file_url ) );
 		$url = explode( '://', $this->site_domain );
-		array_shift( $url );
+
+		$proto_pattern = '^((https?):)?\/\/';
+
+		if ( count( $url ) > 1 ) array_shift($url);
+
+		// If the CDN domain has an existing protocol use that
+		preg_match("#{$proto_pattern}#", $domain, $matches);
 
 		/**
 		 * Allows plugins to override the HTTPS protocol
-		 * 
+		 *
 		 * @param string $scheme
 		 */
-		$scheme = apply_filters( 'dynamic_cdn_protocol', ( is_ssl() ? 'https' : 'http' ) );
+		$scheme = apply_filters(
+			'dynamic_cdn_protocol',
+			( count($matches) >= 2 ? $matches[2] : ( is_ssl() ? 'https' : 'http' ) )
+		);
+
+		$domain = esc_url( $scheme . '://' . preg_replace( "#{$proto_pattern}#" , '', $domain ) );
 
 		/**
 		 * Modify the domain we're rewriting, should an aliasing plugin be used (for example)
 		 *
 		 * @param string $site_domain
 		 */
-		$url = apply_filters( 'dynamic_cdn_site_domain', esc_url( $scheme . '://' . $url[0] ) );
-		
-		return str_replace( $url, $domain, $file_url );
+		$url = apply_filters( 'dynamic_cdn_site_domain', $url[0] );
+
+		$pattern = "#{$proto_pattern}" . preg_quote($url, '#') . '#';
+
+		return preg_replace( $pattern, $domain, $file_url );
 	}
 
 	/**
 	 * Verify whether or not the current manager has any registered CDN domains.
-	 * 
+	 *
 	 * @return bool
 	 */
 	public function has_domains() {
