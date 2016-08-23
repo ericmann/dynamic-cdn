@@ -113,6 +113,7 @@ function initialize_manager() {
 
 		$cdn_domains = [];
 		$cdn_assets_domains = [];
+
 		if ( defined( 'DYNCDN_DOMAINS' ) ) {
 			$cdn_domains = $cdn_assets_domains = explode( ',', DYNCDN_DOMAINS );
 			$cdn_domains = $cdn_assets_domains = array_map( 'trim', $cdn_domains );
