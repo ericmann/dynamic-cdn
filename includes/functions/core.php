@@ -74,7 +74,7 @@ function initialize_manager() {
 	$manager->extensions = apply_filters( 'dynamic_cdn_extensions', array( 'jpe?g', 'gif', 'png', 'bmp', 'js', 'ico' ) );
 
 	if ( ! is_admin() ) {
-		add_action( 'template_redirect', '\EAMann\Dynamic_CDN\Core\template_redirect' );
+		add_action( 'template_redirect', '\EAMann\Dynamic_CDN\Core\create_buffer' );
 
 		if ( $manager->uploads_only ) {
 			add_filter( 'the_content'/*'dynamic_cdn_content'*/, '\EAMann\Dynamic_CDN\Core\filter_uploads_only' );
@@ -83,6 +83,8 @@ function initialize_manager() {
 		}
 
 		add_filter( 'wp_calculate_image_srcset', '\EAMann\Dynamic_CDN\Core\srcsets', 10, 5 );
+
+		add_action( 'rest_api_init', '\EAMann\Dynamic_CDN\Core\create_buffer' );
 
 		$cdn_domains = array();
 		if ( defined( 'DYNCDN_DOMAINS' ) ) {
@@ -154,7 +156,7 @@ function srcset_replacer( $domain ) {
 /**
  * Create an output buffer so we can dynamically rewrite any URLs going out.
  */
-function template_redirect() {
+function create_buffer() {
 	ob_start( '\EAMann\Dynamic_CDN\Core\ob' );
 }
 
