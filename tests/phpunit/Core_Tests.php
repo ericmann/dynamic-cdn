@@ -182,7 +182,7 @@ class Core_Tests extends Base\TestCase {
 		$this->assertEquals( $expected, $filtered_content );
 	}
 
-	public function test_colon_start() {
+	public function test_json_content() {
 		M::wpFunction( 'is_ssl', [ 'return' => true ] );
 		\WP_Mock::wpFunction( 'get_bloginfo', array(
 			'args' => 'url',

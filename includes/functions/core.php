@@ -238,7 +238,7 @@ function filter_uploads_only( $content ) {
 	$preg_path = str_replace( '/', '\\\?/', preg_quote( $path, '#' ) );
 
 	// Targeted replace just on uploads URLs
-	$pattern = "#=(\\\?[\"'])"  // open equal sign and opening quote
+	$pattern = "#(\\\?[\"'])"  // opening quote
 	. "(https?:\\\?/\\\?/{$domain})?"// domain (optional)
 	. "\\\?/($preg_path\\\?/" // uploads path
 	// . "((?:(?!\\1]).)+)" // look for anything that's not our opening quote
@@ -279,7 +279,7 @@ function filter( $content ) {
 	$url = apply_filters( 'dynamic_cdn_site_domain', rtrim( implode( '://', $url ), '/' ) );
 	$url = preg_quote( $url, '#' );
 
-	$pattern = "#=(\\\?[\"'])" // open equal sign and opening quote
+	$pattern = "#(\\\?[\"'])" // opening quote
 	. "(https?:\\\?/\\\?/{$url})?\\\?/"  // domain (optional)
 	// . "([^/](?:(?!\\1).)+)" // look for anything that's not our opening quote
 	. "([^/][\w\s\\\/\-\,\.]+)" // look for anything that's not our opening quote
@@ -341,7 +341,7 @@ function filter_cb( $matches ) {
 		$add_slashes = false;
 	}
 
-	$result = "={$matches[1]}{$scheme}:"
+	$result = "{$matches[1]}{$scheme}:"
 						. ( $add_slashes ? addcslashes("//{$url}/", '/') : "//{$url}/" )
 						. "{$matches[3]}.{$matches[4]}{$query_string}{$matches[1]}";
 
