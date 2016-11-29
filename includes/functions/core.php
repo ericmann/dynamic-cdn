@@ -42,7 +42,8 @@ function setup() {
 function get_site_domain() {
 	$url_parts = parse_url( get_bloginfo( 'url' ) );
 
-	$site_domain = $url_parts['host'] . ($url_parts['port'] ? ':' . $url_parts['port'] : '');
+	$site_domain = $url_parts['host'] . ( isset( $url_parts['port'] ) ? ':' . $url_parts['port'] : '' );
+
 
 	/**
 	 * Update the stored site domain, should an aliasing plugin be used (for example)
@@ -167,7 +168,7 @@ function srcsets( $sources, $size_array, $image_src, $image_meta, $attachment_id
  * @return \Closure
  */
 function srcset_replacer( $domain ) {
-	$manager = \EAMann\Dynamic_CDN\DomainManager($domain);
+	$manager = \EAMann\Dynamic_CDN\DomainManager( $domain );
 
 	/**
 	 * Replace the URL for a specific source in a srcset with a CDN'd version

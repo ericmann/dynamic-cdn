@@ -93,11 +93,8 @@ class DomainManager {
 		if ( in_array( $cdn_domain, $this->cdn_domains[$context] ) ) {
 			return false;
 		} else {
-
 			$this->cdn_domains[$context][] = $cdn_domain;
-
 			$this->has_domains = true;
-
 			return true;
 		}
 	}

@@ -58,6 +58,46 @@ class Core_Tests extends Base\TestCase {
 		$this->assertEquals( 'https://cdn1.com/image.jpg', $replacer( $source )['url'] );
 	}
 
+	public function test_srcset_replacement_no_protocol_cdn() {
+		$manager = Base\DomainManager( 'http://test1.com' );
+		$manager->add( 'cdn1.com' );
+
+		// Mocks
+		M::wpFunction( 'is_ssl', [ 'return' => false ] );
+		M::wpPassthruFunction( 'esc_url' );
+
+		$source = [
+			'url' => 'http://test1.com/image.jpg'
+		];
+
+		$replacer = srcset_replacer( 'http://test1.com' );
+
+		$this->assertEquals( 'http://cdn1.com/image.jpg', $replacer( $source )['url'] );
+	}
+
+
+	public function test_host_with_port() {
+		M::wpFunction( 'is_ssl', [ 'return' => true ] );
+
+		\WP_Mock::wpFunction( 'get_bloginfo', array(
+			'args' => 'url',
+			'return' => 'http://localhost:9001'
+		) );
+		\WP_Mock::wpFunction( 'wp_upload_dir', array(
+			'return' => array(
+				'baseurl' => 'http://localhost:9001/wp-content/uploads'
+			)
+		) );
+		$manager = Base\DomainManager( 'localhost:9001' );
+		$manager->extensions = array( 'jpg' );
+		$manager->add( 'cdn1.com' );
+		$content = '<img src="http://localhost:9001/puppy.jpg" />';
+		$filtered_content = filter( $content );
+		$expected = '<img src="https://cdn1.com/puppy.jpg" />';
+
+		$this->assertEquals( $expected, $filtered_content );
+	}
+
 	public function test_query_string() {
 		M::wpFunction( 'is_ssl', [ 'return' => true ] );
 		\WP_Mock::wpFunction( 'get_bloginfo', array(
@@ -141,5 +181,4 @@ class Core_Tests extends Base\TestCase {
 		';
 		$this->assertEquals( $expected, $filtered_content );
 	}
-
 }
