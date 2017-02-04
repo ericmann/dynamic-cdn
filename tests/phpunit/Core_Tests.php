@@ -182,4 +182,26 @@ class Core_Tests extends Base\TestCase {
 		';
 		$this->assertEquals( $expected, $filtered_content );
 	}
+
+	public function test_json_content() {
+		M::wpFunction( 'is_ssl', [ 'return' => true ] );
+		\WP_Mock::wpFunction( 'get_bloginfo', array(
+			'args' => 'url',
+			'return' => 'http://localhost'
+		) );
+		\WP_Mock::wpFunction( 'wp_upload_dir', array(
+			'return' => array(
+				'baseurl' => 'http://localhost/wp-content/uploads'
+			)
+		) );
+		$manager = Base\DomainManager( 'localhost' );
+		$manager->extensions = array( 'jpg' );
+		$manager->add( 'cdn1.com' );
+		$site_url = 'http://localhost';
+		$content = '{"file": "/wp-content/uploads/puppy.jpg"}';
+		$filtered_content = filter( $content );
+		$expected = '{"file": "https://cdn1.com/wp-content/uploads/puppy.jpg"}';
+		$this->assertEquals( $expected, $filtered_content );
+	}
+
 }
