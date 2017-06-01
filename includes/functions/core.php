@@ -70,7 +70,7 @@ function initialize_manager() {
 	$site_domain = get_site_domain();
 
 	// Instantiate the domain manager
-	$manager = DomainManager( $site_domain );
+	$manager = \EAMann\Dynamic_CDN\DomainManager( $site_domain );
 
 	/**
 	 * Flag whether to filter all media content or just uploads. Set to `true` to only process uploads from the CDN
