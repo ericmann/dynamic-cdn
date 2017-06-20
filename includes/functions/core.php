@@ -252,7 +252,7 @@ function filter( $content ) {
 	$url = preg_quote( $url, '#' );
 
 	$pattern = "#(\\\?[\"'])" // opening quote
-	. "(https?:\\\?/\\\?/{$url})?\\\?/"  // domain (optional)
+	. "((?:https?:)?\\\?/\\\?/{$url})?\\\?/"  // domain (optional)
 	// . "([^/](?:(?!\\1).)+)" // look for anything that's not our opening quote
 	. "([^/][\w\s\\\/\-\,\.]+)" // look for anything that's not our opening quote
 	. "\.(" . implode( '|', $manager->extensions ) . ")" // extensions
