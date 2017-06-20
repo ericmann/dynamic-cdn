@@ -1,13 +1,13 @@
 # Dynamic CDN # [![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url]
 
 **Contributors:**      [ericmann](https://profiles.wordpress.org/ericmann), [10up](https://profiles.wordpress.org/10up)  
-**Donate link:**       https://jumping-duck.com  
+**Donate link:**       https://eamann.com
 **Tags:**              CDN, images, performance  
 **Requires at least:** 3.8.1  
 **Tested up to:**      4.5.2  
-**Stable tag:**        0.4.0-rc1  
+**Stable tag:**        0.4.0 
 **License:**           GPLv2 or later  
-**License URI:**       http://www.gnu.org/licenses/gpl-2.0.html  
+**License URI:**       https://github.com/ericmann/dynamic-cdn/blob/master/LICENSE.md
 
 Dynamic CDN for front-end assets.
 

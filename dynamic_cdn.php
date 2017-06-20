@@ -1,16 +1,16 @@
 <?php
 /**
  * Plugin Name: Dynamic CDN
- * Plugin URI:  https://jumping-duck.com
+ * Plugin URI:  https://eamann.com
  * Description: Dynamic CDN for front-end assets.
- * Version:     0.3.0
+ * Version:     0.4.0
  * Author:      Eric Mann
  * Author URI:  https://eamann.com
  * License:     GPLv2+
  */
 
 /**
- * Copyright (c) 2016 Eric Mann <eric@eamann.com>
+ * Copyright (c) 2016-2017 Eric Mann <eric@eamann.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 or, at
@@ -29,7 +29,7 @@
 
 // Useful global constants
 
-define( 'DYNCDN_VERSION', '0.3.0' );
+define( 'DYNCDN_VERSION', '0.4.0' );
 define( 'DYNCDN_URL',     plugin_dir_url( __FILE__ ) );
 define( 'DYNCDN_PATH',    dirname( __FILE__ ) . '/' );
 define( 'DYNCDN_INC',     DYNCDN_PATH . 'includes/' );
