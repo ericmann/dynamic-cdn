@@ -5,7 +5,7 @@
 **Tags:**              CDN, images, performance  
 **Requires at least:** 3.8.1  
 **Tested up to:**      4.5.2  
-**Stable tag:**        0.4.0 
+**Stable tag:**        0.4.0  
 **License:**           GPLv2 or later  
 **License URI:**       https://github.com/ericmann/dynamic-cdn/blob/master/LICENSE.md
 
