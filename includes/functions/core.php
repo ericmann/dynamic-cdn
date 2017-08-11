@@ -84,7 +84,7 @@ function initialize_manager() {
 	 *
 	 * @param array $extensions
 	 */
-	$manager->extensions = apply_filters( 'dynamic_cdn_extensions', array( 'jpe?g', 'gif', 'png', 'bmp', 'js', 'ico' ) );
+	$manager->extensions = apply_filters( 'dynamic_cdn_extensions', array( 'jpe?g', 'gif', 'png', 'bmp', 'js', 'mp4', 'mp3', 'flac', 'mid', 'midi', 'wav', 'ogg', 'ogv', 'svg', 'svgz', 'pdf', 'doc', 'docx', 'ico' ) );
 
 	if ( ! is_admin() ) {
 		add_action( 'template_redirect', '\EAMann\Dynamic_CDN\Core\create_buffer' );
