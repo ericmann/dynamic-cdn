@@ -306,5 +306,5 @@ function filter_cb( $matches ) {
 						. ( $add_slashes ? addcslashes("//{$url}/", '/') : "//{$url}/" )
 						. "{$matches[3]}.{$matches[4]}{$query_string}{$matches[1]}";
 
-	return $result;
+	return apply_filters( 'dynamic_cdn_filter_cb_result', $result );
 }
